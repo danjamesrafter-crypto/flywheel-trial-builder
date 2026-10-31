@@ -239,7 +239,7 @@ pre.json{background:var(--code);border:1px solid var(--card-border);border-radiu
 /* agent */
 .agent{border-left:1px solid var(--rail-border);background:var(--rail);display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .ag-h{padding:14px 16px;border-bottom:1px solid var(--rail-border);display:flex;align-items:center;gap:10px}
-.ag-h .orb{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#093AF6,#1B68FA 50%,#B080FC);flex:none}
+.ag-h .orb{width:32px;height:32px;border-radius:50%;border:1px solid var(--pill-border);background:var(--card);color:var(--primary);display:grid;place-items:center;flex:none}
 .ag-h b{font-weight:600}
 .ag-h small{display:block;color:var(--label);font-size:11.5px}
 .ag-body{flex:1;overflow:auto;padding:14px 14px 4px;display:flex;flex-direction:column;gap:12px}
@@ -356,6 +356,7 @@ h2{font-weight:600;font-size:18px;letter-spacing:-.01em}
     <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M7 16a4 4 0 01-.5-8A6 6 0 0118 9a3.5 3.5 0 01-.5 7M12 12v8M9 15l3-3 3 3"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></symbol>
+    <symbol id="i-fermi" viewBox="0 0 32 32"><path fill="currentColor" d="M27.018 15.999c-0-4.561-2.815-8.649-7.076-10.276s-9.083-0.456-12.124 2.943c-0.368 0.412-1 0.447-1.411 0.079s-0.448-1.001-0.079-1.413c3.593-4.017 9.293-5.4 14.328-3.477s8.362 6.753 8.362 12.143c0 5.39-3.327 10.221-8.362 12.145s-10.735 0.54-14.328-3.478c-0.368-0.412-0.332-1.043 0.079-1.411s1.043-0.333 1.411 0.078c3.040 3.399 7.863 4.57 12.124 2.943s7.076-5.715 7.076-10.276zM20.333 15.999c-0-0.121-0.067-0.233-0.173-0.292l-1.901-1.039c-0.391-0.214-0.713-0.537-0.927-0.928l-1.039-1.9c-0.058-0.107-0.171-0.174-0.293-0.174s-0.235 0.068-0.293 0.174l-1.039 1.9c-0.214 0.392-0.536 0.714-0.927 0.928l-1.901 1.039c-0.107 0.058-0.173 0.17-0.173 0.292s0.066 0.235 0.173 0.293l1.901 1.039c0.391 0.214 0.713 0.537 0.927 0.928l1.039 1.9c0.058 0.107 0.171 0.173 0.293 0.173s0.235-0.066 0.293-0.173l1.039-1.9c0.214-0.391 0.536-0.714 0.927-0.928l1.901-1.039c0.107-0.059 0.173-0.171 0.173-0.293zM6 18.999c0.552 0 1 0.448 1 1s-0.448 1-1 1h-2c-0.552 0-1-0.448-1-1s0.448-1 1-1h2zM5.333 14.999c0.552 0 1 0.448 1 1s-0.448 1-1 1h-2.667c-0.552 0-1-0.448-1-1s0.448-1 1-1h2.667zM6 10.999c0.552 0 1 0.448 1 1s-0.448 1-1 1h-2c-0.552 0-1-0.448-1-1s0.448-1 1-1h2zM22.333 15.999c0 0.853-0.465 1.639-1.214 2.048l-1.901 1.039c-0.056 0.031-0.102 0.077-0.133 0.133l-1.039 1.9c-0.409 0.748-1.194 1.213-2.047 1.213s-1.638-0.465-2.047-1.213l-1.039-1.9c-0.031-0.056-0.077-0.102-0.133-0.133l-1.901-1.039c-0.748-0.409-1.214-1.195-1.214-2.048s0.465-1.638 1.214-2.047l1.901-1.039c0.056-0.031 0.102-0.077 0.133-0.133l1.039-1.9c0.409-0.748 1.194-1.215 2.047-1.215s1.638 0.466 2.047 1.215l1.039 1.9c0.031 0.056 0.077 0.102 0.133 0.133l1.901 1.039c0.748 0.409 1.213 1.194 1.214 2.047z"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M8 8h11v12H8zM5 16V4h11"/></symbol>
@@ -383,7 +384,7 @@ h2{font-weight:600;font-size:18px;letter-spacing:-.01em}
 
   <aside class="agent" id="agent" aria-label="Setup agent">
     <div class="ag-h">
-      <span class="orb" aria-hidden="true"></span>
+      <span class="orb" aria-hidden="true"><svg width="18" height="18"><use href="#i-fermi"/></svg></span>
       <div><b>Setup agent</b><small>Proposes. You approve. Nothing is written until you apply.</small></div>
       <button class="iconbtn" id="agentClose" style="margin-left:auto" aria-label="Hide agent panel"><svg width="14" height="14"><use href="#i-close"/></svg></button>
     </div>
@@ -638,7 +639,7 @@ function header(eyebrow,title,sub,actions=''){
   return `<div class="top"><div style="min-width:0;flex:1 1 420px">
     <div class="eyebrow"><span>${S.env==='rd'?'R&amp;D sandbox':'Validated instance'} · ${esc(eyebrow)}</span>${liveChip()}<span class="demo">Demo data · fictional trial</span></div>
     <h1>${title}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>
-    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('spark',14)} Agent</button>${actions}</div></div>`;
+    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('fermi',14)} Agent</button>${actions}</div></div>`;
 }
 
 /* ============ VIEWS ============ */
@@ -652,11 +653,11 @@ const SLOTS=[
 V.start = ()=>{
   const got=SLOTS.filter(x=>S.slots[x.id]).length, ready=S.slots.charter&&S.slots.protocol;
   if(S.drafting>=0) return `<div class="top"><div><div class="eyebrow"><span>R&amp;D sandbox · new trial</span><span class="demo">Demo data · fictional trial</span></div><h1>Drafting your setup</h1><p class="sub">The agent reads your documents and drafts the blueprint. Nothing is written to Flywheel yet.</p></div></div>
-   <div class="card" style="margin-top:18px;max-width:640px"><div class="card-b"><div class="prog">${RUN.map((r,i)=>`<div class="${i<S.drafting?'ok':i===S.drafting?'cur':''}">${i<S.drafting?ico('check',14):i===S.drafting?ico('spark',14):'<span class="dot" style="color:var(--pill-border)"></span>'}<span>${r[0]}</span><span class="mono">${i<S.drafting?r[1]:''}</span></div>`).join('')}</div></div></div>`;
+   <div class="card" style="margin-top:18px;max-width:640px"><div class="card-b"><div class="prog">${RUN.map((r,i)=>`<div class="${i<S.drafting?'ok':i===S.drafting?'cur':''}">${i<S.drafting?ico('check',14):i===S.drafting?ico('fermi',14):'<span class="dot" style="color:var(--pill-border)"></span>'}<span>${r[0]}</span><span class="mono">${i<S.drafting?r[1]:''}</span></div>`).join('')}</div></div></div>`;
   return `<div class="top"><div style="min-width:0;flex:1 1 420px">
     <div class="eyebrow"><span>R&amp;D sandbox · group ${groupPicker()}</span>${liveChip()}<span class="demo">Demo data · fictional sponsor</span></div>
     <h1>Set up your first trial</h1><p class="sub">Start from the documents you already have. The agent drafts the Flywheel setup and shows where each value came from. You review it and test it in R&amp;D, and nothing reaches the validated instance until you sign.</p></div>
-    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('spark',14)} Agent</button></div></div>
+    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('fermi',14)} Agent</button></div></div>
   <div class="hero">
    <div class="card"><div class="card-h"><div><h3>Create a trial from documents</h3><div class="lab" style="font-size:12.5px">${got} of 4 added · charter and protocol are enough to start</div></div><span class="pill ${ready?'green':''}">${ready?'Ready to draft':'Waiting for documents'}</span></div>
     <div class="card-b">
@@ -665,7 +666,7 @@ V.start = ()=>{
      <div class="slots">${SLOTS.map(x=>`<div class="slot ${S.slots[x.id]?'got':''}"><span class="ic">${S.slots[x.id]?ico('check',15):ico('doc',15)}</span><div style="min-width:0"><div class="nm">${x.nm}</div>${S.slots[x.id]?`<div class="fn">${esc(S.slots[x.id])}</div>`:`<div class="hint">${x.hint}</div>`}</div></div>`).join('')}</div>
      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap">
       <span class="lab" style="font-size:12.5px">${ready?'Missing items are flagged as gaps, not blockers.':'Add at least the imaging charter and the protocol or SoA.'}</span>
-      <div class="actions">${got?'<button class="btn sm" data-act="clearslots">Clear</button>':''}<button class="btn primary" data-act="draft" ${ready?'':'disabled'}>${ico('spark',14)} Draft setup</button></div></div>
+      <div class="actions">${got?'<button class="btn sm" data-act="clearslots">Clear</button>':''}<button class="btn primary" data-act="draft" ${ready?'':'disabled'}>${ico('fermi',14)} Draft setup</button></div></div>
     </div></div>
    <div class="card"><div class="card-h"><h3>Other ways to start</h3></div>
     <button class="way" disabled><span class="ic">${ico('copy',15)}</span><div><b>Copy an existing trial</b><div class="lab" style="font-size:12.5px">No trials in this group yet. Reuse a signed setup once you have one.</div></div></button>
@@ -711,7 +712,7 @@ V.sources = ()=> header('Sources','Sources','Locked study documents the agent re
   <div class="section card scroll"><table><thead><tr><th>Document</th><th>Type</th><th>What the agent took from it</th><th>Items</th><th>Status</th></tr></thead><tbody>
   ${SOURCES.map(s=>`<tr><td><div style="display:flex;gap:8px;align-items:center">${ico('doc')}<span class="mono" style="color:var(--text)">${esc(s.name)}</span></div><div class="lab" style="font-size:12px;margin-left:24px">${s.size}</div></td><td>${s.kind}</td><td class="lab">${s.got}</td><td class="mono">${s.n}</td><td><span class="pill ${s.uploaded?'amber':'green'}">${s.uploaded?'Demo: not parsed':ico('check',11)+' Read'}</span></td></tr>`).join('')}
   </tbody></table></div>
-  <div class="banner blue">${ico('spark',16)}<div class="grow">Extraction runs at build time only. After you sign the spec, Flywheel runs the configuration deterministically; the agent is not in the runtime path.</div></div>`;
+  <div class="banner blue">${ico('fermi',16)}<div class="grow">Extraction runs at build time only. After you sign the spec, Flywheel runs the configuration deterministically; the agent is not in the runtime path.</div></div>`;
 V.study = ()=> header('Blueprint','Study &amp; arms','Arms are stored on the Intake project and on each subject. The BICR project never receives arm values.',stateBadge())+
   `<div class="section grid2"><div class="card"><div class="card-h"><h3>Study</h3>${cite(['C13'])}</div><div class="card-b"><dl class="kv">
    <dt>Study ID</dt><dd class="mono">NVX-301</dd><dt>Sponsor</dt><dd>Novexa Therapeutics (fictional)</dd><dt>Phase / design</dt><dd>Phase 3, randomized 1:1, open-label</dd><dt>Indication</dt><dd>Previously treated NSCLC</dd><dt>Response criteria</dt><dd>RECIST 1.1 ${cite(['C6'])}</dd><dt>Review model</dt><dd>BICR: 2 primary readers + 1 adjudicator ${cite(['C19'])}</dd><dt>Blinding</dt><dd>Arm, site, investigator assessment, dates ${cite(['C11'])}</dd><dt>Group</dt><dd class="mono">novexa-nvx301</dd></dl></div></div>
