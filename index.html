@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trial Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: collapsible left rail (env-tinted) | blueprint workspace | agent panel. Custom-app family skin on VDS. */
+:root{
+  color-scheme:dark;
+  --page:#070D18; --rail:#0A1322; --rail-border:#182740;
+  --card:#0E1A2B; --card-border:#1E2F4A; --pill:#13233A; --pill-border:#27395A; --hover:#162842; --row:#112036;
+  --text:#E7EAF0; --text2:#C9D0DA; --label:#A3ACBA; --muted:#7F8897; --link:#AEB8FF; --focus:#5AA9F0;
+  --primary:#2269E9; --primary-text:#fff; --blue-wash:rgba(76,124,240,.20); --blue-text:#B4C8FF;
+  --green:#4CC38A; --green-text:#7DDBAE; --green-wash:rgba(76,195,138,.16);
+  --amber:#F0B35E; --amber-text:#F5C98A; --amber-wash:rgba(240,179,94,.18);
+  --red:#F2645A; --red-text:#FF9B93; --red-wash:rgba(242,100,90,.18);
+  --purple:#B080FC; --purple-text:#CDB0FF; --purple-wash:rgba(176,128,252,.18);
+  --rd-tint:#0B1A33; --val-tint:#171230;
+  --code:#09121F;
+  --f-ui:"Inter Tight",Inter,system-ui,sans-serif; --f-title:"Noto Serif",Georgia,serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  color-scheme:light;
+  --page:#F1F3F4; --rail:#F7F8FA; --rail-border:#E3E6EA; --card:#FFFFFF; --card-border:#E3E6EA; --pill:#F4F6F9; --pill-border:#D5DBE3; --hover:#EEF2F8; --row:#F7F9FC;
+  --text:#0B1220; --text2:#2C3646; --label:#5D6877; --muted:#7A8596; --link:#1B4FD1; --focus:#1B68FA;
+  --primary:#1B68FA; --blue-wash:rgba(27,104,250,.10); --blue-text:#1B4FD1;
+  --green:#14AE5C; --green-text:#0D7A40; --green-wash:rgba(20,174,92,.12);
+  --amber:#C47E09; --amber-text:#8A5A06; --amber-wash:rgba(240,179,94,.22);
+  --red:#D73D3D; --red-text:#A82A2A; --red-wash:rgba(215,61,61,.10);
+  --purple:#8E57FF; --purple-text:#6A35D6; --purple-wash:rgba(142,87,255,.12);
+  --rd-tint:#EAF2FC; --val-tint:#EFE6FD; --code:#F4F6F9;
+}}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --page:#F1F3F4; --rail:#F7F8FA; --rail-border:#E3E6EA; --card:#FFFFFF; --card-border:#E3E6EA; --pill:#F4F6F9; --pill-border:#D5DBE3; --hover:#EEF2F8; --row:#F7F9FC;
+  --text:#0B1220; --text2:#2C3646; --label:#5D6877; --muted:#7A8596; --link:#1B4FD1; --focus:#1B68FA;
+  --primary:#1B68FA; --blue-wash:rgba(27,104,250,.10); --blue-text:#1B4FD1;
+  --green:#14AE5C; --green-text:#0D7A40; --green-wash:rgba(20,174,92,.12);
+  --amber:#C47E09; --amber-text:#8A5A06; --amber-wash:rgba(240,179,94,.22);
+  --red:#D73D3D; --red-text:#A82A2A; --red-wash:rgba(215,61,61,.10);
+  --purple:#8E57FF; --purple-text:#6A35D6; --purple-wash:rgba(142,87,255,.12);
+  --rd-tint:#EAF2FC; --val-tint:#EFE6FD; --code:#F4F6F9;
+}
+html,body{height:100%}
+body{background:var(--page);color:var(--text);font:14px/1.45 var(--f-ui);overflow:hidden}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+a{color:var(--link)}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr) 372px;height:100%}
+.app.rail-min{grid-template-columns:64px minmax(0,1fr) 372px}
+.app.agent-off{grid-template-columns:232px minmax(0,1fr) 0}
+.app.rail-min.agent-off{grid-template-columns:64px minmax(0,1fr) 0}
+
+/* rail */
+.rail{background:var(--rail);border-right:1px solid var(--rail-border);display:flex;flex-direction:column;min-height:0;transition:background .3s}
+.app[data-env="rd"] .rail{background:linear-gradient(180deg,var(--rd-tint),var(--rail) 70%)}
+.app[data-env="val"] .rail{background:linear-gradient(180deg,var(--val-tint),var(--rail) 70%)}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 16px 6px}
+.brand svg{flex:none}
+.brand b{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.appname{font:500 11px var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--label);padding:0 16px 12px 52px}
+.env{margin:4px 12px 12px;border:1px solid var(--pill-border);border-radius:12px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--card)}
+.env button{border:0;background:transparent;border-radius:9px;padding:7px 6px;display:flex;gap:6px;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--label);cursor:pointer}
+.env button[aria-pressed="true"]{background:var(--pill);color:var(--text)}
+.env button[aria-pressed="true"].rd svg{color:var(--blue-text)}
+.env button[aria-pressed="true"].val svg{color:var(--purple-text)}
+.nav{overflow:auto;flex:1;padding:0 8px 12px}
+.nav h6{font:500 11px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;color:var(--text2);text-decoration:none;font-size:13.5px}
+.nav a:hover{background:var(--hover)}
+.nav a{position:relative}
+.nav a[aria-current="page"]{background:var(--pill);color:var(--text)}
+.nav a[aria-current="page"]::before{content:"";position:absolute;left:-8px;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:var(--primary)}
+.nav a svg{flex:none;color:var(--label)}
+.nav a .n{margin-left:auto;font:500 11px var(--f-mono);color:var(--label)}
+.nav a .n.warn{background:var(--amber-wash);color:var(--amber-text);border-radius:8px;padding:0 6px}
+.nav a .n.ok{color:var(--green-text)}
+.user{border-top:1px solid var(--rail-border);padding:12px 16px;display:flex;gap:10px;align-items:center;font-size:12.5px}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#093AF6,#B080FC);display:grid;place-items:center;font-weight:600;font-size:11px;color:#fff;flex:none}
+.app.rail-min .brand b,.app.rail-min .appname,.app.rail-min .env,.app.rail-min .nav h6,.app.rail-min .nav a span,.app.rail-min .nav a .n,.app.rail-min .user div{display:none}
+.app.rail-min .nav a{justify-content:center}
+
+/* main */
+.main{overflow:auto;min-width:0}
+.wrap{padding:22px max(16px,2.2vw) 60px;max-width:1240px}
+.top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.eyebrow{font:400 12px var(--f-mono);color:var(--label);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h1{font:400 30px/1.15 var(--f-title);letter-spacing:-.01em;margin:6px 0 8px;text-wrap:balance}
+h2{font:400 22px/1.2 var(--f-title);margin:0 0 4px;letter-spacing:-.01em}
+h3{font:600 15px var(--f-ui);margin:0}
+.sub{color:var(--label);max-width:72ch;margin:0}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{height:36px;border-radius:10px;padding:0 14px;border:1px solid var(--pill-border);background:var(--card);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-text)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--link)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--pill);border:1px solid var(--pill-border);color:var(--text2);white-space:nowrap}
+.pill.green{background:var(--green-wash);border-color:transparent;color:var(--green-text)}
+.pill.amber{background:var(--amber-wash);border-color:transparent;color:var(--amber-text)}
+.pill.red{background:var(--red-wash);border-color:transparent;color:var(--red-text)}
+.pill.purple{background:var(--purple-wash);border-color:transparent;color:var(--purple-text)}
+.pill.blue{background:var(--blue-wash);border-color:transparent;color:var(--blue-text)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.demo{font:500 11px var(--f-mono);color:var(--amber-text);border:1px dashed var(--amber);border-radius:999px;padding:2px 9px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 6px}
+.kpi{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:14px 16px}
+.kpi .l{font:500 12px var(--f-ui);text-transform:uppercase;letter-spacing:.05em;color:var(--label)}
+.kpi .v{font:500 28px var(--f-ui);font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{font-size:13px;color:var(--label)}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--card-border);flex-wrap:wrap}
+.card-b{padding:14px 16px}
+.section{margin-top:22px}
+.section-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.asset{padding:14px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left;border:1px solid var(--card-border);background:var(--card);border-radius:14px}
+.asset:hover{background:var(--hover)}
+.asset .top2{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.asset .num{font:500 24px var(--f-ui);font-variant-numeric:tabular-nums}
+.asset .what{color:var(--label);font-size:12.5px}
+.muted{color:var(--muted)} .lab{color:var(--label)}
+.mono{font-family:var(--f-mono);font-size:12px}
+table{border-collapse:collapse;width:100%}
+th{font:500 12px var(--f-ui);text-transform:uppercase;letter-spacing:.05em;color:var(--label);text-align:left;padding:9px 12px;border-bottom:1px solid var(--card-border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--card-border);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--row)}
+.scroll{overflow-x:auto}
+.cite{display:inline-flex;align-items:center;gap:4px;font:500 11px var(--f-mono);color:var(--blue-text);background:var(--blue-wash);border-radius:6px;padding:1px 6px;cursor:help;border:0;white-space:nowrap;margin:1px 2px 1px 0}
+.cite.agent{color:var(--purple-text);background:var(--purple-wash)}
+.cite.you{color:var(--green-text);background:var(--green-wash)}
+.tip{position:fixed;z-index:50;max-width:340px;background:var(--card);border:1px solid var(--pill-border);border-radius:10px;padding:10px 12px;box-shadow:0 8px 25px rgba(0,0,0,.35);font-size:12.5px;pointer-events:none}
+.tip .d{font:500 11px var(--f-mono);color:var(--label);margin-bottom:4px}
+.tip q{color:var(--text2)}
+.flow{display:flex;gap:0;align-items:stretch;overflow-x:auto;padding:4px 2px}
+.flow .st{min-width:140px;flex:1;padding:10px 12px;border:1px solid var(--card-border);background:var(--card);border-radius:12px;position:relative}
+.flow .st small{display:block;color:var(--label);font-size:11.5px;margin-top:2px}
+.flow .st .k{font:500 10.5px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.flow .ar{flex:none;width:22px;display:grid;place-items:center;color:var(--muted)}
+.flow .st.blind{border-color:var(--purple);box-shadow:inset 0 0 0 1px var(--purple-wash)}
+
+/* schedule matrix */
+.soa th,.soa td{text-align:center;padding:8px 6px}
+.soa th:first-child,.soa td:first-child{text-align:left;padding-left:14px;position:sticky;left:0;background:var(--card);z-index:1}
+.soa .vh{font:600 12px var(--f-mono);color:var(--text);text-transform:none;letter-spacing:0}
+.soa .vd{display:block;font:400 10.5px var(--f-mono);color:var(--label);text-transform:none;letter-spacing:0}
+.cellb{width:34px;height:30px;border-radius:8px;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-grid;place-items:center;position:relative;font:600 11px var(--f-mono)}
+.cellb:hover{border-color:var(--pill-border)}
+.cellb.req{background:var(--blue-wash);color:var(--blue-text)}
+.cellb.cond{background:var(--amber-wash);color:var(--amber-text);border:1px dashed var(--amber)}
+.cellb.opt{color:var(--label);border:1px dashed var(--pill-border)}
+.cellb.na{color:var(--muted);opacity:.35}
+.cellb.edited::after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--label);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:16px;height:12px;border-radius:4px;display:inline-block}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--pill-border);background:var(--card);border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--text2)}
+.chip[aria-pressed="true"]{background:var(--blue-wash);border-color:transparent;color:var(--blue-text);font-weight:600}
+
+/* decisions */
+.dec{border:1px solid var(--card-border);border-radius:14px;background:var(--card);overflow:hidden}
+.dec+.dec{margin-top:12px}
+.dec.open{border-color:var(--amber);box-shadow:inset 3px 0 0 var(--amber)}
+.dec.done{box-shadow:inset 3px 0 0 var(--green)}
+.dec-h{padding:14px 16px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.dec-b{padding:0 16px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.src{border:1px solid var(--card-border);border-radius:10px;padding:10px 12px;background:var(--row)}
+.src .d{font:500 11px var(--f-mono);color:var(--label);margin-bottom:4px}
+.src q{color:var(--text2);font-size:13px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--pill-border);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--card)}
+.opt:hover{background:var(--hover)}
+.opt input{margin-top:3px;accent-color:var(--primary)}
+.opt .t{font-weight:600}
+.opt .x{font-size:12.5px;color:var(--label)}
+.rec{font:600 10.5px var(--f-ui);text-transform:uppercase;letter-spacing:.05em;color:var(--purple-text);background:var(--purple-wash);border-radius:6px;padding:1px 6px;margin-left:6px}
+.impact{font-size:12.5px;color:var(--label);margin-top:6px}
+
+/* form preview */
+.fp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.fpane{background:#0A1426;border:1px solid var(--card-border);border-radius:14px;padding:16px;color:#E7EAF0}
+:root[data-theme="light"] .fpane{background:#0A1426}
+.fpane .ff{margin-bottom:14px}
+.fpane label.fl{display:block;font-weight:600;font-size:13px;margin-bottom:5px}
+.fpane .desc{font-size:12px;color:#A3ACBA;margin:-2px 0 6px}
+.fpane input[type=number],.fpane input[type=text],.fpane textarea,.fpane select{width:100%;background:#0E1A2B;border:1px solid #27395A;border-radius:8px;padding:7px 9px;color:#E7EAF0}
+.fpane .ro{display:flex;gap:6px;flex-wrap:wrap}
+.fpane .ro label{display:inline-flex;gap:6px;align-items:center;border:1px solid #27395A;border-radius:8px;padding:5px 9px;font-size:12.5px;cursor:pointer}
+.fpane .ro input{accent-color:#2269E9}
+.fpane .para{font:400 17px var(--f-title);border-bottom:1px solid #1E2F4A;padding-bottom:4px;margin:6px 0 12px}
+.fpane .instr{background:rgba(76,124,240,.18);border:1px solid rgba(76,124,240,.4);border-radius:8px;padding:9px 11px;font-size:12.5px;color:#B4C8FF;margin-bottom:14px}
+.fpane .err{color:#FF9B93;font-size:12px;margin-top:4px}
+.fpane .req::after{content:" *";color:#FF9B93}
+.fpane .hid{display:none}
+pre.json{background:var(--code);border:1px solid var(--card-border);border-radius:12px;padding:12px 14px;font:12px/1.5 var(--f-mono);color:var(--text2);overflow:auto;max-height:520px;margin:0;white-space:pre}
+.tabs{display:flex;gap:18px;border-bottom:1px solid var(--card-border);margin-bottom:14px;overflow-x:auto}
+.tabs button{height:40px;border:0;background:none;color:var(--label);font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--primary)}
+
+/* plan */
+.op{display:grid;grid-template-columns:58px 64px minmax(0,1.3fr) minmax(0,1fr) 120px;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--card-border);font-size:13px}
+.op:last-child{border-bottom:0}
+.op .m{font:600 11px var(--f-mono);border-radius:6px;padding:2px 6px;text-align:center}
+.m.POST{background:var(--green-wash);color:var(--green-text)} .m.PUT{background:var(--blue-wash);color:var(--blue-text)} .m.PATCH{background:var(--purple-wash);color:var(--purple-text)}
+.op .e{font:12px var(--f-mono);color:var(--text2);overflow-wrap:anywhere}
+.op .st{text-align:right;font-size:12px}
+.op-g{padding:8px 14px;font:500 11px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--label);background:var(--row);border-bottom:1px solid var(--card-border)}
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.stp{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--card-border);background:var(--card);font-size:13px;color:var(--label)}
+.stp b{font:600 11px var(--f-mono);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--pill);color:var(--label)}
+.stp.now{border-color:var(--primary);color:var(--text)} .stp.now b{background:var(--primary);color:#fff}
+.stp.done{color:var(--green-text)} .stp.done b{background:var(--green-wash);color:var(--green-text)}
+.banner{display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:12px 0;font-size:13.5px}
+.banner.amber{background:var(--amber-wash);color:var(--amber-text)}
+.banner.green{background:var(--green-wash);color:var(--green-text)}
+.banner.purple{background:var(--purple-wash);color:var(--purple-text)}
+.banner.blue{background:var(--blue-wash);color:var(--blue-text)}
+.banner .grow{flex:1}
+
+/* agent */
+.agent{border-left:1px solid var(--rail-border);background:var(--rail);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.ag-h{padding:14px 16px;border-bottom:1px solid var(--rail-border);display:flex;align-items:center;gap:10px}
+.ag-h .orb{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#093AF6,#1B68FA 50%,#B080FC);flex:none}
+.ag-h b{font-weight:600}
+.ag-h small{display:block;color:var(--label);font-size:11.5px}
+.ag-body{flex:1;overflow:auto;padding:14px 14px 4px;display:flex;flex-direction:column;gap:12px}
+.run{border:1px solid var(--card-border);border-radius:12px;background:var(--card)}
+.run summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:600}
+.run summary::-webkit-details-marker{display:none}
+.run ol{margin:0;padding:0 12px 10px 12px;list-style:none;display:flex;flex-direction:column;gap:6px}
+.run li{display:grid;grid-template-columns:16px 1fr auto;gap:8px;font-size:12.5px;color:var(--text2);align-items:start}
+.run li .tm{font:11px var(--f-mono);color:var(--muted)}
+.run li svg{color:var(--green);margin-top:2px}
+.msg{font-size:13.5px;line-height:1.5}
+.msg.me{align-self:flex-end;background:var(--blue-wash);color:var(--text);border-radius:12px 12px 4px 12px;padding:8px 11px;max-width:88%}
+.msg.ai{color:var(--text2)}
+.msg.ai p{margin:0 0 8px}
+.msg.ai ul{margin:0 0 8px;padding-left:18px}
+.prop{border:1px solid var(--purple);border-radius:12px;padding:10px 12px;background:var(--purple-wash);margin-top:6px}
+.prop .k{font:600 10.5px var(--f-ui);text-transform:uppercase;letter-spacing:.06em;color:var(--purple-text)}
+.prop .acts{display:flex;gap:6px;margin-top:8px}
+.sugs{display:flex;gap:6px;flex-wrap:wrap;padding:6px 14px}
+.sug{border:1px solid var(--pill-border);background:var(--card);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text2)}
+.sug:hover{background:var(--hover)}
+.ag-in{padding:10px 14px 14px;display:flex;gap:8px}
+.ag-in input{flex:1;height:38px;border-radius:10px;border:1px solid var(--pill-border);background:var(--card);padding:0 12px}
+.drop{border:1.5px dashed var(--pill-border);border-radius:14px;padding:18px;text-align:center;color:var(--label);display:flex;flex-direction:column;gap:6px;align-items:center}
+.drop.over{border-color:var(--primary);background:var(--blue-wash)}
+.modal{position:fixed;inset:0;background:rgba(3,8,16,.6);display:grid;place-items:center;z-index:60;padding:16px}
+.modal .box{background:var(--card);border:1px solid var(--pill-border);border-radius:16px;width:min(520px,100%);padding:20px;max-height:90vh;overflow:auto}
+.modal label{display:block;font-size:12.5px;color:var(--label);margin:12px 0 5px}
+.modal select,.modal input,.modal textarea{width:100%;height:38px;border-radius:9px;border:1px solid var(--pill-border);background:var(--page);padding:0 10px}
+.modal textarea{height:70px;padding:8px 10px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--pill-border);border-radius:10px;padding:9px 14px;font-size:13px;z-index:70;box-shadow:0 8px 25px rgba(0,0,0,.35)}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;font-size:13px}
+.kv dt{color:var(--label)} .kv dd{margin:0}
+.iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--pill-border);background:var(--card);display:grid;place-items:center;cursor:pointer;color:var(--label)}
+.mobile-agent{display:none}
+.app.agent-off .mobile-agent{display:inline-flex}
+.hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;margin-top:18px}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.slot{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--card-border);border-radius:12px;padding:11px 12px;background:var(--row)}
+.slot .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--pill);color:var(--label);flex:none}
+.slot.got{border-color:transparent;background:var(--green-wash)} .slot.got .ic{background:transparent;color:var(--green-text)}
+.slot .nm{font-weight:600;font-size:13px} .slot .hint{font-size:12px;color:var(--label)} .slot .fn{font:11.5px var(--f-mono);color:var(--green-text);overflow-wrap:anywhere}
+.bigdrop{border:1.5px dashed var(--pill-border);border-radius:14px;padding:22px 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.bigdrop.over{border-color:var(--primary);background:var(--blue-wash)}
+.bigdrop .glyph{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--blue-wash);color:var(--blue-text);flex:none}
+.way{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--card-border);text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%;cursor:pointer}
+.way:last-child{border-bottom:0} .way:hover:not([disabled]){background:var(--hover)} .way[disabled]{cursor:not-allowed;opacity:.55}
+.way .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--pill);color:var(--label);flex:none}
+.tpls{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.steps4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.step4{padding:14px 16px}
+.step4 .k{font:500 11px var(--f-mono);color:var(--muted)}
+.empty-row{padding:26px 16px;text-align:center;color:var(--label)}
+.prog{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.prog div{display:grid;grid-template-columns:18px 1fr auto;gap:8px;font-size:13px;color:var(--label);align-items:center}
+.prog div.ok{color:var(--text2)} .prog div.ok svg{color:var(--green)} .prog div.cur{color:var(--text)} .prog div.cur svg{color:var(--blue-text)}
+@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)} .steps4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.slots,.steps4{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){
+  .app,.app.rail-min{grid-template-columns:64px minmax(0,1fr) 0}
+  .app .brand b,.app .appname,.app .env,.app .nav h6,.app .nav a span,.app .nav a .n,.app .user div{display:none}
+  .app .nav a{justify-content:center}
+  .agent{position:fixed;right:0;top:0;bottom:0;width:min(380px,100%);z-index:40;transform:translateX(100%);transition:transform .2s;box-shadow:-10px 0 30px rgba(0,0,0,.4)}
+  .app.agent-open .agent{transform:none}
+  .mobile-agent{display:inline-flex}
+  .kpis,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .app,.app.rail-min{grid-template-columns:minmax(0,1fr)}
+  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:56px;flex-direction:row;z-index:30;border-right:0;border-top:1px solid var(--rail-border)}
+  .brand,.appname,.env,.user,.nav h6{display:none!important}
+  .nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px}
+  .main{padding-bottom:56px}
+  .grid2,.grid3,.dec-b,.fp{grid-template-columns:minmax(0,1fr)}
+  .op{grid-template-columns:48px 54px minmax(0,1fr);}
+  .op .t2,.op .st{grid-column:3}
+  .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Flywheel light branding (VDS light tokens, Inter, env-tinted rail as in the CTAS frames) */
+:root{--f-ui:Inter,system-ui,sans-serif;--f-title:Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:26px;letter-spacing:-.015em}
+h2{font-weight:600;font-size:18px;letter-spacing:-.01em}
+.app[data-env="rd"] .rail{background:var(--rd-tint)}
+.app[data-env="val"] .rail{background:var(--val-tint)}
+.card,.kpi,.asset,.dec{box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.btn{border-radius:8px}
+.livechip{font:500 11px var(--f-mono);color:var(--green-text);background:var(--green-wash);border-radius:999px;padding:2px 9px}
+.gsel{font:400 12px var(--f-mono);border:1px solid var(--pill-border);border-radius:6px;background:var(--card);padding:1px 4px}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="fwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#093AF6"/><stop offset=".55" stop-color="#1B68FA"/><stop offset="1" stop-color="#B080FC"/></linearGradient>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M9 3h6M10 3v6l-5 10a1.5 1.5 0 001.3 2h11.4A1.5 1.5 0 0019 19l-5-10V3"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-read" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></symbol>
+    <symbol id="i-form" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path fill="none" stroke="currentColor" stroke-width="1.7" d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path fill="none" stroke="currentColor" stroke-width="1.7" d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5a3 3 0 010 6M18 14c2 .7 3 2.8 3 6"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-plan" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 017 0v3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M7 16a4 4 0 01-.5-8A6 6 0 0118 9a3.5 3.5 0 01-.5 7M12 12v8M9 15l3-3 3 3"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M8 8h11v12H8zM5 16V4h11"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M6 6l12 12M18 6L6 18"/></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app" data-env="rd">
+  <aside class="rail" aria-label="Trial Builder navigation">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="url(#fwg)"/><path d="M9 10.5l13-4v4.2l-13 4zM9 17l9.5-3v4.2L9 21.2z" fill="#fff"/></svg>
+      <b>Flywheel</b>
+      <button class="iconbtn" id="railToggle" style="margin-left:auto;width:26px;height:26px" aria-label="Collapse navigation"><svg width="14" height="14"><use href="#i-menu"/></svg></button>
+    </div>
+    <div class="appname">Trial Builder</div>
+    <div class="env" role="group" aria-label="Environment">
+      <button class="rd" data-env="rd" aria-pressed="true"><svg width="13" height="13"><use href="#i-lock"/></svg>R&amp;D</button>
+      <button class="val" data-env="val" aria-pressed="false"><svg width="13" height="13"><use href="#i-shield"/></svg>Validated</button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="user"><span class="avatar" id="uAv">DR</span><div><div id="uName">Dan Rafter</div><div class="lab" style="font-size:11.5px">Trial coordinator</div></div></div>
+  </aside>
+
+  <main class="main" id="main"><div class="wrap" id="view"></div></main>
+
+  <aside class="agent" id="agent" aria-label="Setup agent">
+    <div class="ag-h">
+      <span class="orb" aria-hidden="true"></span>
+      <div><b>Setup agent</b><small>Proposes. You approve. Nothing is written until you apply.</small></div>
+      <button class="iconbtn" id="agentClose" style="margin-left:auto" aria-label="Hide agent panel"><svg width="14" height="14"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="ag-body" id="agBody"></div>
+    <div class="sugs" id="sugs"></div>
+    <form class="ag-in" id="agForm"><input id="agInput" placeholder="Ask about the setup or request a change" aria-label="Message the setup agent" autocomplete="off"><button class="btn primary" type="submit">Send</button></form>
+  </aside>
+</div>
+<div class="tip" id="tip" hidden></div>
+<div id="modalRoot"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.flywheel.io/sdk/extension/flywheel-extension-0.14.9.min.js"></script>
+<script>
+/* ============ DEMO DATA: fictional trial, fictional sponsor. Shapes follow Flywheel 23.x payloads where known; (verify) marks inference. ============ */
+const CITES = {
+  C1:{doc:'Imaging Charter v2.0',loc:'§1.3 · p.4',q:'In case of conflict between this Charter and the clinical study protocol, the protocol shall take precedence.'},
+  C2:{doc:'Imaging Charter v2.0',loc:'§5.1 · p.11',q:'Tumor assessments will be performed every 6 weeks (±3 days) from randomization through Week 48.'},
+  C3:{doc:'Protocol Amd 2 · SoA',loc:'Table 2 · p.6',q:'Tumor imaging: Q6W (±7 days) through Week 48, then Q9W (±7 days) until radiographic progression, withdrawal, or death.'},
+  C4:{doc:'Imaging Charter v2.0',loc:'§6.2 · p.14',q:'Reconstructed slice thickness must not exceed 5 mm; ≤2.5 mm is strongly recommended for lesion measurement.'},
+  C5:{doc:'Imaging Charter v2.0',loc:'§6.4 · p.16',q:'Brain MRI with gadolinium is required at screening for all participants. Post-baseline brain imaging is required only for participants with brain metastases at baseline.'},
+  C6:{doc:'IRC Read Manual v1.1',loc:'§4.1 · p.9',q:'Up to 5 target lesions in total, maximum 2 per organ, will be selected at baseline per RECIST 1.1.'},
+  C7:{doc:'RECIST_TL_NTL_NL_form_v3.json',loc:'fields[4].validation',q:'{"<=":[{"var":"tl_count"},3]} · "No more than 3 target lesions."'},
+  C8:{doc:'IRC Read Manual v1.1',loc:'§7.2 · p.22',q:'Adjudication is triggered when the two primary readers disagree on best overall response or on the timepoint of radiographic progression.'},
+  C9:{doc:'Imaging Charter v2.0',loc:'§3.4 · p.8',q:'Scans from the safety run-in cohort will be assessed by local investigators only and are not subject to BICR.'},
+  C10:{doc:'Protocol Amd 2 · SoA',loc:'Table 2, note c',q:'Safety run-in participants undergo an additional CT at Week 3 (Day 21 ± 3 days).'},
+  C11:{doc:'Imaging Charter v2.0',loc:'§9.1 · p.25',q:'Reviewers shall be blinded to treatment arm, investigator assessments, site identity, and scan dates.'},
+  C12:{doc:'IRC Read Manual v1.1',loc:'§5.3 · p.14',q:'Readers will have access to all prior timepoints for the participant when assessing a follow-up timepoint.'},
+  C13:{doc:'Protocol Amd 2 · SoA',loc:'§4.1 · p.3',q:'Participants are randomized 1:1 to NVX-114 or docetaxel, stratified by PD-L1 TPS (<1% vs ≥1%) and histology.'},
+  C14:{doc:'Imaging Charter v2.0',loc:'§10.2 · p.28',q:'Each completed assessment shall be electronically signed by the reviewer in a 21 CFR Part 11 compliant system.'},
+  C15:{doc:'Imaging Charter v2.0',loc:'§6.1 · p.13',q:'CT of chest, abdomen and pelvis with IV contrast, portal venous phase. MRI abdomen/pelvis is acceptable where iodinated contrast is contraindicated.'},
+  C16:{doc:'Protocol Amd 2 · SoA',loc:'Table 2, note f',q:'End of treatment: tumor imaging if not performed within the prior 6 weeks.'},
+  C17:{doc:'ImagingCRF_DataDictionary.csv',loc:'row 9 · brain_mets_bl',q:'brain_mets_bl, baseline_imaging, yesno, "Brain metastases present at baseline?"'},
+  C18:{doc:'Imaging Charter v2.0',loc:'§8.3 · p.21',q:'The imaging core lab shall apply a consistent per-participant date shift before images are made available to reviewers.'},
+  C19:{doc:'IRC Read Manual v1.1',loc:'§3.1 · p.6',q:'Two independent primary radiologists and one adjudicating radiologist, each board-certified with ≥5 years of oncology imaging experience.'},
+  C20:{doc:'Imaging Charter v2.0',loc:'§7.1 · p.18',q:'The core lab performs quality control on receipt; non-conforming scans are queried to the site within 2 business days.'},
+};
+const SOURCES = [
+  {id:'S1',name:'NVX301_Imaging_Charter_v2.0.pdf',kind:'Imaging charter',size:'48 pp · 2.1 MB',got:'Visits & windows, 3 acquisition templates, blinding rules, de-identification, QC SLA, e-signature',n:31},
+  {id:'S2',name:'NVX301_Protocol_Amd2_SoA_excerpt.pdf',kind:'Protocol (schedule of assessments)',size:'12 pp · 640 KB',got:'3 arms, randomization, Q6W→Q9W schedule, EOT rule, safety run-in Week 3',n:14},
+  {id:'S3',name:'NVX301_IRC_Read_Manual_v1.1.pdf',kind:'Read protocol',size:'31 pp · 1.4 MB',got:'RECIST 1.1 rules, 2+1 reader model, adjudication trigger, prior-timepoint access',n:12},
+  {id:'S4',name:'RECIST_TL_NTL_NL_form_v3.json',kind:'Form definition (Flywheel V3)',size:'22 fields · 9 KB',got:'Timepoint form, validation and visibility rules',n:22},
+  {id:'S5',name:'NVX301_ImagingCRF_DataDictionary.csv',kind:'eCRF definition (REDCap)',size:'14 rows · 3 KB',got:'2 instruments: imaging visit (session), baseline imaging (subject)',n:14},
+];
+const ARMS = [
+  {id:'A',label:'Arm A · NVX-114',desc:'NVX-114 2.4 mg/kg IV Q3W',n:'~300',bicr:true,c:['C13']},
+  {id:'B',label:'Arm B · Docetaxel',desc:'Docetaxel 75 mg/m² IV Q3W',n:'~300',bicr:true,c:['C13']},
+  {id:'SR',label:'Safety run-in',desc:'NVX-114 open-label, extra Week 3 CT',n:'24',bicr:false,c:['C9','C10']},
+];
+const VISITS = [
+  {id:'SCR',label:'Screening',day:'D−28 to −1',win:'fixed',arms:['A','B','SR'],c:['C3']},
+  {id:'W3',label:'Week 3',day:'D21',win:'±3',arms:['SR'],c:['C10']},
+  {id:'W6',label:'Week 6',day:'D42',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W12',label:'Week 12',day:'D84',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W18',label:'Week 18',day:'D126',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W24',label:'Week 24',day:'D168',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W30',label:'Week 30',day:'D210',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W36',label:'Week 36',day:'D252',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W42',label:'Week 42',day:'D294',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'W48',label:'Week 48',day:'D336',win:'q6',arms:['A','B','SR'],c:['C2','C3']},
+  {id:'Q9W',label:'Q9W after W48',day:'D399, D462 …',win:'±7',arms:['A','B','SR'],c:['C3'],repeat:true},
+  {id:'EOT',label:'End of treatment',day:'event',win:'if none ≤6 wk',arms:['A','B','SR'],c:['C16']},
+  {id:'UNS',label:'Unscheduled',day:'any',win:'—',arms:['A','B','SR'],c:['C15']},
+];
+const TEMPLATES = [
+  {id:'CTCAP',label:'CT Chest/Abdomen/Pelvis + contrast',short:'CT',c:['C15','C4'],acq:[
+    {name:'CT CAP portal venous',rules:['Modality = CT','Intent = Structural','Features include Contrast','Anatomy ⊇ Chest, Abdomen, Pelvis','SliceThickness rule from D2'],min:1}],
+    alt:'MRI Abd/Pelvis accepted if iodinated contrast contraindicated'},
+  {id:'MRBRAIN',label:'MRI Brain + gadolinium',short:'MR',c:['C5'],acq:[
+    {name:'T1 post-gad 3D',rules:['Modality = MR','Anatomy = Brain','Measurement = T1','Features include Contrast, 3D'],min:1},
+    {name:'T2 FLAIR',rules:['Modality = MR','Anatomy = Brain','Measurement = T2','Features include FLAIR'],min:1}]},
+  {id:'BONE',label:'Bone scan (when clinically indicated)',short:'NM',c:['C15'],acq:[{name:'Whole-body planar',rules:['Modality = NM','Anatomy = Whole Body'],min:1}]},
+];
+// base schedule: template x visit -> req / cond / opt / na
+function baseCell(t,v){
+  if(t==='CTCAP') return v==='UNS'?'opt':'req';
+  if(t==='MRBRAIN'){ if(v==='SCR') return 'req'; if(v==='W3') return 'na'; return 'cond'; }
+  if(t==='BONE') return (v==='SCR'||v==='UNS'||v==='EOT')?'opt':'na';
+}
+const DECISIONS = [
+  {id:'D1',title:'Visit window: ±7 days (protocol) or ±3 days (charter)?',area:'Schedule',c:['C3','C2','C1'],
+   why:'The SoA and the charter disagree on the Q6W window. The charter says the protocol prevails on conflicts.',
+   opts:[{id:'p7',t:'±7 days, follow the protocol',x:'Matches SoA Table 2. Charter §1.3 says the protocol takes precedence. Recommend a charter amendment note.',rec:true},
+         {id:'c3',t:'±3 days, follow the charter',x:'Stricter. Expect more out-of-window flags and site queries.'},
+         {id:'ask',t:'Hold and ask the sponsor',x:'Blocks the build until the sponsor answers.'}],
+   impact:'Sets window_days on 9 visits in project.info.visit_schedule and the visit-window check.'},
+  {id:'D2',title:'Slice thickness: what fails QC and what only warns?',area:'Session templates',c:['C4'],
+   why:'The charter requires ≤5 mm and recommends ≤2.5 mm. A template rule can only pass or fail, so the warn level has to live in the QC gear.',
+   opts:[{id:'w',t:'Fail above 5 mm, warn above 2.5 mm',x:'Template requires ≤5 mm; QC gear tags 2.6–5 mm series qc-warn-thick.',rec:true},
+         {id:'s',t:'Fail above 2.5 mm',x:'Stricter than the charter. More rejected scans from community sites.'},
+         {id:'n',t:'No thickness rule',x:'Not recommended. Thick series reach readers unflagged.'}],
+   impact:'Changes the CT CAP template rule and the imaging-qc gear config.'},
+  {id:'D3',title:'The supplied form caps target lesions at 3. RECIST 1.1 allows 5.',area:'Read protocol',c:['C6','C7'],
+   why:'The V3 form JSON validates tl_count ≤ 3. The read manual and RECIST 1.1 allow up to 5 total, 2 per organ. The per-organ rule cannot be written in JSON Logic over a count field.',
+   opts:[{id:'fix5',t:'Patch the form to ≤5; per-organ rule via labels and reader instruction',x:'Adds an instruction field and a validation message. Agent marks the form as changed from source.',rec:true},
+         {id:'keep',t:'Keep ≤3 as supplied',x:'Conflicts with the read manual. Readers cannot record lesions 4–5.'},
+         {id:'ask',t:'Send back to the form author',x:'Blocks the read protocol.'}],
+   impact:'Edits form.fields[tl_count].validation and adds an instruction field.'},
+  {id:'D4',title:'Post-baseline brain MRI only for participants with brain mets at baseline',area:'Session templates',c:['C5','C17'],
+   why:'Session templates cannot express "required only if" (verify). The baseline flag exists in the eCRF as brain_mets_bl.',
+   opts:[{id:'flag',t:'Optional in the template; compliance driven by subject.info.trial.brain_mets_bl',x:'The eCRF import sets the flag. Subject View and visit checks treat MRI as required when the flag is yes.',rec:true},
+         {id:'req',t:'Require brain MRI at every visit',x:'Wrong for most participants. Every visit shows missing imaging.'},
+         {id:'off',t:'Screening only',x:'Misses required follow-up for participants with brain mets.'}],
+   impact:'Sets MRI Brain post-baseline to conditional and adds a rule to project.info.visit_schedule.'},
+  {id:'D5',title:'Adjudication trigger: the manual defines it at participant level',area:'Read protocol',c:['C8'],
+   why:'Flywheel triggers adjudication per task when trigger fields disagree. Best overall response and timepoint of progression span visits, so they cannot be a per-session trigger field.',
+   opts:[{id:'tp',t:'Trigger on overall_response per timepoint',x:'Stricter than the manual. Estimated adjudication rate rises from ~25% to ~35% of cases (verify with the CRO). Needs sponsor sign-off.',rec:true},
+         {id:'pd',t:'Trigger on a derived pd_called field only',x:'Closer to the manual, but misses BOR disagreements without a PD call.'},
+         {id:'post',t:'No platform trigger; adjudication assigned by the task admin after a BOR comparison',x:'Matches the manual. Manual step; depends on the Task Admin Console.'}],
+   impact:'Sets workflow.trigger_fields on the timepoint read protocol.'},
+  {id:'D6',title:'Safety run-in scans are read locally, not by BICR',area:'Pipeline',c:['C9','C10'],
+   why:'The agent excluded the SR arm from the de-identified copy and from reader task creation. Confirm.',
+   opts:[{id:'ex',t:'Keep SR in intake only, no BICR tasks',x:'Week 3 template still created for SR so site uploads validate.',rec:true},
+         {id:'in',t:'Send SR to BICR too',x:'Adds about 240 reads outside the charter scope.'}],
+   impact:'Adds an arm filter to the de-id export rule and the task-creation rule.'},
+];
+const GEARS = [
+  {id:'G1',proj:'Intake',gear:'dicom-mr-classifier',ver:'2.4.1',when:'DICOM file uploaded',what:'Classifies modality, anatomy, contrast',c:['C15']},
+  {id:'G2',proj:'Intake',gear:'file-metadata-importer',ver:'1.9.0',when:'DICOM file uploaded',what:'Pulls header values (SliceThickness) into file.info',c:['C4']},
+  {id:'G3',proj:'Intake',gear:'imaging-qc-check',ver:'0.3.1',byo:true,when:'Classification complete',what:'Checks the session against its template; tags qc-pass, qc-fail or qc-warn-thick',c:['C4','C20']},
+  {id:'G4',proj:'Intake',gear:'deid-export',ver:'1.6.2',when:'Session tagged qc-pass, arm ≠ SR',what:'Copies to the BICR project with the de-id profile and per-participant date shift',c:['C11','C18','C9']},
+  {id:'G5',proj:'BICR',gear:'reader-task-creator',ver:'0.1.0',byo:true,when:'Session added to BICR project',what:'Creates 2 timepoint read tasks in the reader pool (verify: no native rule for task creation)',c:['C19']},
+];
+const TEAM = [
+  {kind:'Role',name:'BICR Reader',scope:'BICR project',perm:'tasks_view, read files, annotate, submit forms',c:['C19','C11']},
+  {kind:'Role',name:'BICR Adjudicator',scope:'BICR project',perm:'Reader permissions + adjudication tasks',c:['C19']},
+  {kind:'Role',name:'Site Uploader',scope:'Intake project',perm:'Upload, view own site only (verify site scoping)',c:['C20']},
+  {kind:'Role',name:'Imaging QC',scope:'Intake project',perm:'Read-write, tags, queries',c:['C20']},
+  {kind:'Staffing pool',name:'NVX301 Primary Readers',scope:'BICR project',perm:'Radiologist A, Radiologist B (placeholders)',c:['C19']},
+  {kind:'Staffing pool',name:'NVX301 Adjudicators',scope:'BICR project',perm:'Radiologist C (placeholder)',c:['C19']},
+];
+const CRF = [
+  {v:'scan_date',inst:'imaging_visit',type:'text · date_ymd',fw:'date',lvl:'Session',phi:true,note:'Intake only. Never copied to BICR.'},
+  {v:'modality_done',inst:'imaging_visit',type:'checkbox',fw:'checkbox',lvl:'Session',note:'1, CT CAP | 2, MRI Brain | 3, Bone scan | 4, MRI Abd/Pelvis'},
+  {v:'contrast_given',inst:'imaging_visit',type:'yesno',fw:'radio',lvl:'Session'},
+  {v:'contrast_ci_reason',inst:'imaging_visit',type:'text',fw:'text',lvl:'Session',note:'Visible when contrast_given = 0'},
+  {v:'deviation',inst:'imaging_visit',type:'dropdown',fw:'select',lvl:'Session',note:'Out of window | Wrong protocol | Missing anatomy | Other'},
+  {v:'brain_mets_bl',inst:'baseline_imaging',type:'yesno',fw:'radio',lvl:'Subject',note:'Drives D4: post-baseline MRI requirement',c:'C17'},
+  {v:'measurable_bl',inst:'baseline_imaging',type:'yesno',fw:'radio',lvl:'Subject'},
+];
+
+/* ============ STATE ============ */
+const S = {mode:'trial', slots:{}, drafting:-1, view:'overview', env:'rd', arm:'all', dec:{D6:null}, edits:{}, run:{state:'idle',done:{},ids:{}}, verified:false, signed:null, promote:{state:'idle'}, readTab:'preview', formVals:{}, formChecked:false, chat:[]};
+const ACCEPTED_BY_AGENT = {};
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cite = (ids,cls='')=> (ids||[]).map(id=>`<button class="cite ${cls}" data-cite="${id}" aria-label="Source: ${esc(CITES[id].doc)} ${esc(CITES[id].loc)}">${esc(shortDoc(CITES[id].doc))} ${esc(CITES[id].loc.split(' · ')[0])}</button>`).join('');
+function shortDoc(d){return d.startsWith('Imaging')?'Charter':d.startsWith('Protocol')?'SoA':d.startsWith('IRC')?'Manual':d.includes('json')?'Form':d.includes('csv')?'eCRF':d}
+const ico = (id,s=16)=>`<svg width="${s}" height="${s}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+const openDecs = ()=>DECISIONS.filter(d=>!S.dec[d.id]);
+const choice = id=>S.dec[id]||null;
+
+/* derived blueprint values */
+function windowLabel(v){ if(v.win!=='q6') return v.win; const c=choice('D1'); return c==='c3'?'±3':c==='p7'?'±7':'±7 / ±3 ?'; }
+function cellState(t,v){ const k=t+'|'+v; if(S.edits[k]) return S.edits[k]; let b=baseCell(t,v);
+  if(t==='MRBRAIN' && b==='cond'){ const c=choice('D4'); if(c==='req') b='req'; else if(c==='off') b='na'; }
+  return b; }
+function sliceRule(){const c=choice('D2'); return c==='s'?'SliceThickness ≤ 2.5 mm':c==='n'?'(no thickness rule)':c==='w'?'SliceThickness ≤ 5.0 mm · warn > 2.5 mm':'SliceThickness ≤ 5.0 mm · warn > 2.5 mm (pending D2)';}
+function tlMax(){return choice('D3')==='keep'?3:5;}
+
+/* ============ V3 FORM (generated) ============ */
+function F(type,key,label,extra={}){return Object.assign({type,key,label,description:null,placeholder:null,helperText:null},extra);}
+function buildForm(){
+  const fu = [{'==':[{var:'timepoint_type'},'followup']}];
+  const fields=[
+    F('instruction','instr_blind','Blinded read',{description:'Dates, site and arm are hidden. Compare against prior timepoints using the file browser.'}),
+    F('radio','timepoint_type','Timepoint',{requiredWhenVisible:true,options:[{value:'baseline',label:'Baseline'},{value:'followup',label:'Follow-up'}]}),
+    F('paragraph','sec_tl','Target lesions',{description:'Measure with the Target lesion label.'}),
+  ];
+  if(choice('D3')==='fix5') fields.push(F('instruction','instr_organ','Per-organ limit',{description:'Maximum 2 target lesions per organ (RECIST 1.1). The form checks the total only.'}));
+  fields.push(
+    F('int','tl_count','Number of target lesions',{requiredWhenVisible:true,validation:[{logic:{'<=':[{var:'tl_count'},tlMax()]},message:`No more than ${tlMax()} target lesions.`},{logic:{'>=':[{var:'tl_count'},0]},message:'Must be 0 or more.'}]}),
+    F('float','tl_sum_mm','Sum of diameters (mm)',{requiredWhenVisible:[{'>':[{var:'tl_count'},0]}],visible:[{'>':[{var:'tl_count'},0]}],validation:[{logic:{'>=':[{var:'tl_sum_mm'},0]},message:'Must be 0 or more.'}]}),
+    F('radio','tl_response','Target lesion response',{requiredWhenVisible:true,visible:fu,options:['CR','PR','SD','PD','NE'].map(v=>({value:v}))}),
+    F('paragraph','sec_ntl','Non-target and new lesions'),
+    F('radio','ntl_response','Non-target response',{requiredWhenVisible:true,visible:fu,options:[{value:'CR'},{value:'NonCR_NonPD',label:'Non-CR/Non-PD'},{value:'PD'},{value:'NE'},{value:'ND',label:'None at baseline'}]}),
+    F('radio','new_lesions','New lesions',{requiredWhenVisible:true,visible:fu,options:[{value:'no',label:'No'},{value:'yes',label:'Yes'},{value:'equivocal',label:'Equivocal'}]}),
+    F('radio','overall_response','Overall timepoint response',{requiredWhenVisible:true,visible:fu,options:['CR','PR','SD','PD','NE'].map(v=>({value:v})),
+      validation:[{logic:{'or':[{'!=':[{var:'new_lesions'},'yes']},{'==':[{var:'overall_response'},'PD']}]},message:'A new lesion means overall response is PD.'}]}),
+    F('text-area','comments','Reader comments',{placeholder:'Optional',requiredWhenVisible:false}),
+  );
+  const defaults={}; fields.forEach(f=>{ if(!['paragraph','instruction'].includes(f.type)) defaults[f.key] = f.type==='checkbox'?[]:f.type==='switch'?false:null; });
+  return {title:'NVX-301 BICR · RECIST 1.1 timepoint',description:'Complete for every timepoint. Required fields are marked.',defaults,fields};
+}
+function buildProtocol(){
+  const d5=choice('D5');
+  return {
+    completion_tags:['bicr-read-complete'],
+    workflow: d5==='post'?{type:'single'}:{type:'adjudication',read_count:2,trigger_fields:[{key:d5==='pd'?'pd_called':'overall_response',threshold:null}],form:{title:'Adjudication',description:'Select the read you agree with and give a reason.',defaults:{agree_with:null,rationale:null},fields:[F('radio','agree_with','I agree with',{requiredWhenVisible:true,options:[{value:'reader_1',label:'Reader 1'},{value:'reader_2',label:'Reader 2'}]}),F('text-area','rationale','Rationale',{requiredWhenVisible:true})]}},
+    esignature_config:{required:true,reasons:['Read complete per IRC charter']},
+    viewer_config:{toolbar:{hideTagBrowser:true},labels:{items:[{value:'TL',label:'Target lesion',color:'#4CC38A'},{value:'NTL',label:'Non-target lesion',color:'#F0B35E'},{value:'NL',label:'New lesion',color:'#F2645A'}],labelOnMeasure:true,exclusive:true},fileBrowser:{enabled:true,scope:'subject'}},
+    form: buildForm()
+  };
+}
+/* mini JSON Logic */
+function jl(r,d){ if(r===null||typeof r!=='object') return r; if(Array.isArray(r)) return r.map(x=>jl(x,d));
+  const op=Object.keys(r)[0], a=[].concat(r[op]); const v=i=>jl(a[i],d);
+  switch(op){case 'var':return d[a[0]]??null;case '==':return v(0)==v(1);case '!=':return v(0)!=v(1);case '>':return v(0)>v(1);case '>=':return v(0)>=v(1);case '<':return v(0)<v(1);case '<=':return v(0)<=v(1);
+   case 'and':return a.every((_,i)=>v(i));case 'or':return a.some((_,i)=>v(i));case '!':return !v(0);case 'in':{const h=v(1);return Array.isArray(h)||typeof h==='string'?h.includes(v(0)):false}
+   case 'length':{const x=v(0);return x==null?0:String(x).length}default:return null}}
+const isVis=(f,d)=>f.visible===undefined||f.visible===true?true:f.visible===false?false:f.visible.some(r=>!!jl(r,d));
+const isReq=(f,d)=>f.requiredWhenVisible===true?true:Array.isArray(f.requiredWhenVisible)?f.requiredWhenVisible.some(r=>!!jl(r,d)):false;
+
+/* ============ BUILD PLAN ============ */
+function buildPlan(){
+  const ops=[]; const P=(g,m,e,t,body,verify)=>ops.push({id:'OP-'+String(ops.length+1).padStart(2,'0'),g,m,e,t,body,verify:!!verify});
+  P('Projects','POST','/api/projects','NVX-301_Intake (unblinded, site uploads)',{group:'novexa-nvx301',label:'NVX-301_Intake',description:'Site intake and QC. Unblinded.'});
+  P('Projects','POST','/api/projects','NVX-301_BICR (blinded reads)',{group:'novexa-nvx301',label:'NVX-301_BICR',description:'De-identified, date-shifted copies for BICR.'});
+  const sched = VISITS.map(v=>({id:v.id,label:v.label,day:v.day,window:windowLabel(v),arms:v.arms,repeat:!!v.repeat,templates:TEMPLATES.filter(t=>['req','cond'].includes(cellState(t.id,v.id))).map(t=>({id:t.id,req:cellState(t.id,v.id)}))}));
+  P('Trial definition','POST','/api/projects/{intake}/info','Trial, arms, visit schedule (Intake)',{set:{trial:{id:'NVX-301',criteria:'RECIST 1.1',arms:ARMS.map(a=>({id:a.id,label:a.label,bicr:a.bicr}))},visit_schedule:sched}});
+  P('Trial definition','POST','/api/projects/{bicr}/info','Trial and visit schedule (BICR, no arms)',{set:{trial:{id:'NVX-301',criteria:'RECIST 1.1'},visit_schedule:sched.map(({arms,...r})=>r)}});
+  TEMPLATES.forEach(t=>P('Session templates','POST','/api/projects/{intake}/templates',`Template · ${t.label}`,{label:t.id,acquisitions:t.acq.map(a=>({label:a.name,minimum:a.min,rules:a.rules.map(r=>r.includes('D2')?sliceRule():r)}))},true));
+  P('De-identification','POST','/api/projects/{intake}/files','deid-profile_nvx301.yaml (date shift per participant)',{name:'deid-profile_nvx301.yaml',profile:{dicom:{date_increment:'per-subject random',fields:['PatientName','PatientID','InstitutionName','StudyDate','SeriesDate','AcquisitionDate']}}});
+  GEARS.forEach(g=>P('Gear rules','POST',`/api/projects/{${g.proj.toLowerCase()}}/rules`,`${g.gear} ${g.ver} · ${g.when}`,{gear:g.gear,version:g.ver,trigger:g.when,config:g.gear==='imaging-qc-check'?{slice_max_mm:choice('D2')==='s'?2.5:5,slice_warn_mm:choice('D2')==='w'?2.5:null}:g.gear==='deid-export'?{exclude_arms:choice('D6')==='in'?[]:['SR'],destination:'NVX-301_BICR'}:{}},g.byo||g.gear==='reader-task-creator'));
+  P('Read protocol','POST','/api/protocols','NVX-301 BICR · RECIST 1.1 timepoint (draft)',{label:'NVX301 RECIST TP',task_type:'read',group_id:'novexa-nvx301',...buildProtocol()},true);
+  P('Read protocol','PUT','/api/protocols/{id}/publish','Publish protocol',{status:'published'},true);
+  P('eCRF forms','POST','/api/projects/{intake}/info','Imaging CRF definitions (2 instruments)',{set:{forms:{imaging_visit:{level:'session'},baseline_imaging:{level:'subject'}}}},true);
+  TEAM.filter(t=>t.kind==='Role').forEach(r=>P('Roles and pools','POST','/api/roles',`Role · ${r.name}`,{label:r.name,actions:r.perm}));
+  TEAM.filter(t=>t.kind!=='Role').forEach(r=>P('Roles and pools','POST','/api/staffing_pools',`Pool · ${r.name}`,{label:r.name,members:[]},true));
+  P('Roles and pools','POST','/api/projects/{bicr}/permissions','Grant reader and adjudicator roles on BICR',{roles:['BICR Reader','BICR Adjudicator']});
+  ['qc-pass','qc-fail','qc-warn-thick','bicr-read-complete'].forEach(t=>P('Tags','POST','/api/groups/novexa-nvx301/tags',`Tag · ${t}`,{value:t}));
+  P('Reporting','POST','/api/containers/{bicr}/views','Data view · BICR timepoint responses',{label:'BICR responses',columns:['subject.label','session.label','task.form.overall_response','task.subcategory']},true);
+  return ops;
+}
+function fingerprint(){const s=JSON.stringify([buildPlan().map(o=>o.body),S.dec]);let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(16).padStart(8,'0');}
+
+/* ============ NAV ============ */
+const NAV = [
+  ['Trials',[['start','plus','New trial']]],
+  ['NVX-301 setup',[['overview','home','Overview'],['sources','doc','Sources']]],
+  ['Blueprint',[['study','flask','Study & arms'],['schedule','cal','Visits & schedule'],['templates','scan','Session templates'],['reads','read','Read protocol'],['forms','form','eCRF forms'],['pipeline','gear','Pipeline'],['team','team','Roles & pools']]],
+  ['Build',[['decisions','flag','Decisions'],['plan','plan','Build plan']]],
+];
+function renderNav(){
+  if(S.mode==='blank'){ $('#nav').innerHTML=`<h6>Trials</h6><a href="#start" aria-current="page" title="New trial">${ico('plus')}<span>New trial</span></a><h6>Blueprint</h6><p class="lab" style="font-size:12px;margin:2px 10px;line-height:1.45">Arms, visits, templates, reads, forms and pipeline appear here once the agent drafts your setup.</p>`; return; }
+  const counts={sources:SOURCES.length,study:ARMS.length,schedule:VISITS.length,templates:TEMPLATES.length,reads:1,forms:2,pipeline:GEARS.length,team:TEAM.length,plan:buildPlan().length};
+  $('#nav').innerHTML = NAV.map(([h,items])=>`<h6>${h}</h6>`+items.map(([id,ic,l])=>{
+    let n=counts[id]!=null?`<span class="n">${counts[id]}</span>`:'';
+    if(id==='decisions'){const o=openDecs().length;n=o?`<span class="n warn">${o} open</span>`:`<span class="n ok">done</span>`;}
+    return `<a href="#${id}" ${S.view===id?'aria-current="page"':''} title="${l}">${ico(ic)}<span>${l}</span>${n}</a>`;}).join('')).join('');
+}
+
+/* ============ HEADER ============ */
+function stateBadge(){
+  if(S.promote.state==='done') return '<span class="pill purple">'+ico('shield',12)+' Live on Validated · spec v1.0</span>';
+  if(S.signed) return '<span class="pill green">'+ico('lock',12)+' Setup locked · spec v1.0</span>';
+  if(S.verified) return '<span class="pill blue"><span class="dot"></span> Dry run verified in R&amp;D</span>';
+  const o=openDecs().length; return o?`<span class="pill amber"><span class="dot"></span> Draft · ${o} decision${o>1?'s':''} open</span>`:'<span class="pill blue"><span class="dot"></span> Draft · ready for dry run</span>';
+}
+function header(eyebrow,title,sub,actions=''){
+  return `<div class="top"><div style="min-width:0;flex:1 1 420px">
+    <div class="eyebrow"><span>${S.env==='rd'?'R&amp;D sandbox':'Validated instance'} · ${esc(eyebrow)}</span>${liveChip()}<span class="demo">Demo data · fictional trial</span></div>
+    <h1>${title}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>
+    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('spark',14)} Agent</button>${actions}</div></div>`;
+}
+
+/* ============ VIEWS ============ */
+const V = {};
+const SLOTS=[
+  {id:'charter',nm:'Imaging charter',hint:'PDF · required',re:/charter/i,sample:'NVX301_Imaging_Charter_v2.0.pdf'},
+  {id:'protocol',nm:'Protocol or schedule of assessments',hint:'PDF · required',re:/protocol|soa|schedule/i,sample:'NVX301_Protocol_Amd2_SoA_excerpt.pdf'},
+  {id:'manual',nm:'Read manual',hint:'PDF · needed for central reads',re:/manual|read|irc/i,sample:'NVX301_IRC_Read_Manual_v1.1.pdf'},
+  {id:'forms',nm:'Form definitions',hint:'V3 JSON, REDCap CSV or ODM-XML · optional',re:/\.(json|csv|xml)$|form|crf|dictionary/i,sample:'RECIST_TL_NTL_NL_form_v3.json + ImagingCRF_DataDictionary.csv'},
+];
+V.start = ()=>{
+  const got=SLOTS.filter(x=>S.slots[x.id]).length, ready=S.slots.charter&&S.slots.protocol;
+  if(S.drafting>=0) return `<div class="top"><div><div class="eyebrow"><span>R&amp;D sandbox · new trial</span><span class="demo">Demo data · fictional trial</span></div><h1>Drafting your setup</h1><p class="sub">The agent reads your documents and drafts the blueprint. Nothing is written to Flywheel yet.</p></div></div>
+   <div class="card" style="margin-top:18px;max-width:640px"><div class="card-b"><div class="prog">${RUN.map((r,i)=>`<div class="${i<S.drafting?'ok':i===S.drafting?'cur':''}">${i<S.drafting?ico('check',14):i===S.drafting?ico('spark',14):'<span class="dot" style="color:var(--pill-border)"></span>'}<span>${r[0]}</span><span class="mono">${i<S.drafting?r[1]:''}</span></div>`).join('')}</div></div></div>`;
+  return `<div class="top"><div style="min-width:0;flex:1 1 420px">
+    <div class="eyebrow"><span>R&amp;D sandbox · group ${groupPicker()}</span>${liveChip()}<span class="demo">Demo data · fictional sponsor</span></div>
+    <h1>Set up your first trial</h1><p class="sub">Start from the documents you already have. The agent drafts the Flywheel setup and shows where each value came from. You review it and test it in R&amp;D, and nothing reaches the validated instance until you sign.</p></div>
+    <div class="actions"><button class="btn mobile-agent" data-act="agent">${ico('spark',14)} Agent</button></div></div>
+  <div class="hero">
+   <div class="card"><div class="card-h"><div><h3>Create a trial from documents</h3><div class="lab" style="font-size:12.5px">${got} of 4 added · charter and protocol are enough to start</div></div><span class="pill ${ready?'green':''}">${ready?'Ready to draft':'Waiting for documents'}</span></div>
+    <div class="card-b">
+     <div class="bigdrop" id="bigdrop"><div class="glyph">${ico('up',24)}</div><div style="flex:1;min-width:200px"><b>Drop study documents here</b><div class="lab" style="font-size:12.5px">Use the locked, approved versions. Files are matched to the slots below by name and content.</div></div>
+      <div class="actions"><label class="btn">Choose files<input type="file" id="bigfile" multiple hidden></label><button class="btn ghost" data-act="sample">Use sample documents</button></div></div>
+     <div class="slots">${SLOTS.map(x=>`<div class="slot ${S.slots[x.id]?'got':''}"><span class="ic">${S.slots[x.id]?ico('check',15):ico('doc',15)}</span><div style="min-width:0"><div class="nm">${x.nm}</div>${S.slots[x.id]?`<div class="fn">${esc(S.slots[x.id])}</div>`:`<div class="hint">${x.hint}</div>`}</div></div>`).join('')}</div>
+     <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap">
+      <span class="lab" style="font-size:12.5px">${ready?'Missing items are flagged as gaps, not blockers.':'Add at least the imaging charter and the protocol or SoA.'}</span>
+      <div class="actions">${got?'<button class="btn sm" data-act="clearslots">Clear</button>':''}<button class="btn primary" data-act="draft" ${ready?'':'disabled'}>${ico('spark',14)} Draft setup</button></div></div>
+    </div></div>
+   <div class="card"><div class="card-h"><h3>Other ways to start</h3></div>
+    <button class="way" disabled><span class="ic">${ico('copy',15)}</span><div><b>Copy an existing trial</b><div class="lab" style="font-size:12.5px">No trials in this group yet. Reuse a signed setup once you have one.</div></div></button>
+    <div class="way" style="cursor:default"><span class="ic">${ico('flask',15)}</span><div><b>Start from a reading template</b><div class="lab" style="font-size:12.5px">Prebuilt protocol, labels and adjudication. Add your schedule and forms afterwards.</div>
+      <div class="tpls">${['RECIST 1.1 · 2+1 BICR','iRECIST','RANO 2.0','Lugano','ETDRS reading center'].map(t=>`<button class="chip" data-act="tpl" data-tpl="${t}">${t}</button>`).join('')}</div></div></div>
+    <button class="way" data-act="blankcfg"><span class="ic">${ico('plus',15)}</span><div><b>Start blank</b><div class="lab" style="font-size:12.5px">Build each piece by hand or with the agent. Best for retrospective studies without a charter.</div></div></button>
+   </div>
+  </div>
+  <div class="section"><div class="section-h"><div><h2>How setup works</h2></div></div>
+   <div class="steps4">${[['1','Add documents','Charter, protocol, read manual, form definitions.'],['2','Review the draft','Arms, visits, templates, read protocol, forms and pipeline, each linked to its source.'],['3','Decide conflicts','Where documents disagree or Flywheel cannot express a rule, you choose and it is recorded.'],['4','Test, sign, promote','Dry run in R&amp;D, check the read-back, sign the spec, then apply it to Validated.']].map(([n,t,d])=>`<div class="card step4"><div class="k">Step ${n}</div><h3 style="margin:4px 0 4px">${t}</h3><div class="lab" style="font-size:12.5px">${d}</div></div>`).join('')}</div></div>
+  <div class="section card"><div class="card-h"><h3>Trials in this group</h3><span class="mono lab">0</span></div><div class="empty-row">No trials yet. Your trial appears here as a draft once the agent finishes.</div></div>`;
+};
+V.overview = ()=>{
+  const plan=buildPlan(), cited = plan.length;
+  const o=openDecs();
+  return header('NVX-301 setup','NVX-301 · BICR setup','Phase 3, NVX-114 vs docetaxel in previously treated NSCLC. The agent read 5 source documents and proposed the Flywheel setup below. Review the open decisions, dry-run in R&amp;D, sign the spec, then promote it to Validated.',
+   `${stateBadge()}<button class="btn primary" data-go="${o.length?'decisions':'plan'}">${o.length?'Review decisions':'Open build plan'} ${ico('arrow',14)}</button>`)+
+  `<div class="kpis">
+    <div class="kpi"><div class="l">Sources read</div><div class="v">5 / 5</div><div class="s">93 items extracted</div></div>
+    <div class="kpi"><div class="l">Flywheel assets</div><div class="v">${plan.length}</div><div class="s">API operations in the plan</div></div>
+    <div class="kpi"><div class="l">Decisions open</div><div class="v" style="color:${o.length?'var(--amber-text)':'var(--green-text)'}">${o.length}</div><div class="s">${o.length?'Conflicts and gaps in the sources':'All decided and recorded'}</div></div>
+    <div class="kpi"><div class="l">Traced to source</div><div class="v">${Object.keys(S.edits).length?Math.round(100*(cited-Object.keys(S.edits).length)/cited):100}%</div><div class="s">${Object.keys(S.edits).length?Object.keys(S.edits).length+' manual edits recorded':'Every asset cites a page or field'}</div></div>
+  </div>
+  <div class="section"><div class="section-h"><div><h2>How data moves</h2><p class="sub">Two projects keep site uploads unblinded and readers blinded ${cite(['C11','C18'])}</p></div></div>
+   <div class="flow">
+    <div class="st"><div class="k">Site</div>Upload<small>Data Portal · Site Uploader role</small></div><div class="ar">${ico('arrow',14)}</div>
+    <div class="st"><div class="k">Intake project</div>Classify + QC<small>Template check · ${esc(sliceRule().split(' · ')[0])}</small></div><div class="ar">${ico('arrow',14)}</div>
+    <div class="st"><div class="k">Gear rule</div>De-identify + date shift<small>${choice('D6')==='in'?'All arms':'Arms A, B (SR stays local)'}</small></div><div class="ar">${ico('arrow',14)}</div>
+    <div class="st blind"><div class="k">BICR project · blinded</div>2 independent reads<small>Prior timepoints visible</small></div><div class="ar">${ico('arrow',14)}</div>
+    <div class="st blind"><div class="k">Workflow</div>${choice('D5')==='post'?'Admin-assigned adjudication':'Adjudication on disagreement'}<small>E-signed per read ${''}</small></div>
+   </div></div>
+  <div class="section"><div class="section-h"><div><h2>What the agent proposed</h2><p class="sub">Open any group to see the values and the sentence each one came from.</p></div></div>
+   <div class="grid4">
+    ${[['study','Study & arms',ARMS.length,'2 BICR arms + safety run-in'],['schedule','Visits',VISITS.length,'Q6W to W48, then Q9W'],['templates','Session templates',TEMPLATES.length,'CT CAP, MRI Brain, Bone'],['reads','Read protocol',1,'RECIST 1.1, 2 + adjudicator'],['forms','eCRF forms',2,'Imaging visit, baseline imaging'],['pipeline','Gear rules',GEARS.length,'2 need BYO gears'],['team','Roles & pools',TEAM.length,'4 roles, 2 pools'],['plan','API operations',plan.length,'Ordered, previewable']].map(([g,l,n,w])=>{
+      const flag = DECISIONS.filter(d=>!S.dec[d.id] && ({schedule:['Schedule'],templates:['Session templates'],reads:['Read protocol'],pipeline:['Pipeline']}[g]||[]).includes(d.area)).length;
+      return `<button class="asset" data-go="${g}"><div class="top2"><span class="lab">${l}</span>${flag?`<span class="pill amber">${flag} open</span>`:''}</div><div class="num">${n}</div><div class="what">${w}</div></button>`}).join('')}
+   </div></div>
+  ${o.length?`<div class="section"><div class="section-h"><div><h2>Needs your call</h2><p class="sub">Where the sources disagree or Flywheel can't express the rule as written.</p></div><button class="btn sm" data-go="decisions">All decisions</button></div>
+   <div class="card">${o.slice(0,4).map(d=>`<div style="display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--card-border);flex-wrap:wrap"><span class="mono lab">${d.id}</span><div style="flex:1;min-width:220px">${esc(d.title)}<div class="lab" style="font-size:12.5px">${d.area} · ${cite(d.c)}</div></div><button class="btn sm" data-go="decisions" data-focus="${d.id}">Decide</button></div>`).join('')}</div></div>`:''}`;
+};
+V.sources = ()=> header('Sources','Sources','Locked study documents the agent reads. Re-uploading a new version starts an amendment and shows a diff against the signed spec.',stateBadge())+
+  `<div class="section"><div class="drop" id="drop">${ico('up',26)}<b style="color:var(--text)">Drop charter, protocol, read manual or form definitions</b><span>PDF, Flywheel V3 form JSON, REDCap data dictionary CSV, CDISC ODM-XML (verify)</span><label class="btn sm" style="margin-top:6px">Choose files<input type="file" id="file" multiple hidden></label></div></div>
+  <div class="section card scroll"><table><thead><tr><th>Document</th><th>Type</th><th>What the agent took from it</th><th>Items</th><th>Status</th></tr></thead><tbody>
+  ${SOURCES.map(s=>`<tr><td><div style="display:flex;gap:8px;align-items:center">${ico('doc')}<span class="mono" style="color:var(--text)">${esc(s.name)}</span></div><div class="lab" style="font-size:12px;margin-left:24px">${s.size}</div></td><td>${s.kind}</td><td class="lab">${s.got}</td><td class="mono">${s.n}</td><td><span class="pill ${s.uploaded?'amber':'green'}">${s.uploaded?'Demo: not parsed':ico('check',11)+' Read'}</span></td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="banner blue">${ico('spark',16)}<div class="grow">Extraction runs at build time only. After you sign the spec, Flywheel runs the configuration deterministically; the agent is not in the runtime path.</div></div>`;
+V.study = ()=> header('Blueprint','Study &amp; arms','Arms are stored on the Intake project and on each subject. The BICR project never receives arm values.',stateBadge())+
+  `<div class="section grid2"><div class="card"><div class="card-h"><h3>Study</h3>${cite(['C13'])}</div><div class="card-b"><dl class="kv">
+   <dt>Study ID</dt><dd class="mono">NVX-301</dd><dt>Sponsor</dt><dd>Novexa Therapeutics (fictional)</dd><dt>Phase / design</dt><dd>Phase 3, randomized 1:1, open-label</dd><dt>Indication</dt><dd>Previously treated NSCLC</dd><dt>Response criteria</dt><dd>RECIST 1.1 ${cite(['C6'])}</dd><dt>Review model</dt><dd>BICR: 2 primary readers + 1 adjudicator ${cite(['C19'])}</dd><dt>Blinding</dt><dd>Arm, site, investigator assessment, dates ${cite(['C11'])}</dd><dt>Group</dt><dd class="mono">novexa-nvx301</dd></dl></div></div>
+   <div class="card"><div class="card-h"><h3>Where arms live</h3><span class="pill purple">Blinding</span></div><div class="card-b"><dl class="kv">
+   <dt>Definition</dt><dd class="mono">intake.info.trial.arms[]</dd><dt>Per subject</dt><dd class="mono">subject.info.trial.arm</dd><dt>Stratification</dt><dd>PD-L1 TPS, histology ${cite(['C13'])}</dd><dt>BICR project</dt><dd>Arm stripped by the de-id profile; subject relabeled</dd><dt>Native field</dt><dd class="lab">Flywheel has subject <span class="mono">cohort</span>, but its values are fixed; arms go in info (verify)</dd></dl></div></div></div>
+  <div class="section card scroll"><table><thead><tr><th>Arm</th><th>Treatment</th><th>N</th><th>BICR</th><th>Visits that differ</th><th>Source</th></tr></thead><tbody>
+  ${ARMS.map(a=>`<tr><td><b>${a.label}</b></td><td>${a.desc}</td><td class="mono">${a.n}</td><td>${a.bicr||choice('D6')==='in'?'<span class="pill green">Yes</span>':'<span class="pill">Local read only</span>'}</td><td class="lab">${a.id==='SR'?'Adds Week 3 CT':'None'}</td><td>${cite(a.c)}</td></tr>`).join('')}</tbody></table></div>`;
+V.schedule = ()=>{
+  const vis = VISITS.filter(v=>S.arm==='all'||v.arms.includes(S.arm));
+  return header('Blueprint','Visits &amp; schedule','Session templates say what a visit contains; this schedule says when. Click a cell to change it. Changes are recorded as manual edits against the source.',stateBadge())+
+  `<div class="section" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+    <div class="chips" role="group" aria-label="Filter by arm">${[['all','All arms'],...ARMS.map(a=>[a.id,a.label])].map(([id,l])=>`<button class="chip" data-arm="${id}" aria-pressed="${S.arm===id}">${l}</button>`).join('')}</div>
+    <div class="legend"><span><i class="sw" style="background:var(--blue-wash)"></i>Required</span><span><i class="sw" style="border:1px dashed var(--amber);background:var(--amber-wash)"></i>Conditional</span><span><i class="sw" style="border:1px dashed var(--pill-border)"></i>Optional</span><span><i class="dot" style="color:var(--green)"></i>Your edit</span></div></div>
+  <div class="card scroll" style="margin-top:12px"><table class="soa"><thead><tr><th>Template</th>${vis.map(v=>`<th><span class="vh">${v.id}</span><span class="vd">${esc(v.day)}</span><span class="vd" style="color:${v.win==='q6'&&!choice('D1')?'var(--amber-text)':'var(--label)'}">${esc(windowLabel(v))}</span></th>`).join('')}</tr></thead>
+  <tbody>${TEMPLATES.map(t=>`<tr><td style="min-width:200px"><b>${esc(t.label)}</b><div>${cite(t.c)}</div></td>${vis.map(v=>{const st=cellState(t.id,v.id);const ed=S.edits[t.id+'|'+v.id];
+     return `<td><button class="cellb ${st}${ed?' edited':''}" data-cell="${t.id}|${v.id}" aria-label="${esc(t.label)} at ${v.label}: ${st}">${st==='na'?'·':t.short}</button></td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+  ${!choice('D1')?`<div class="banner amber">${ico('flag',16)}<div class="grow"><b>D1 open.</b> The SoA says ±7 days and the charter says ±3 days for Q6W visits. ${cite(['C3','C2'])}</div><button class="btn sm" data-go="decisions" data-focus="D1">Decide</button></div>`:''}
+  <div class="section card scroll"><table><thead><tr><th>Visit</th><th>Target day</th><th>Window</th><th>Arms</th><th>Session label rule</th><th>Source</th></tr></thead><tbody>
+  ${vis.map(v=>`<tr><td><b>${v.label}</b> <span class="mono lab">${v.id}</span></td><td class="mono">${esc(v.day)}</td><td class="mono">${esc(windowLabel(v))}</td><td>${v.arms.join(', ')}</td><td class="mono lab">${v.repeat?'^Q9W-W\\d+$':'^'+v.id+'$'}</td><td>${cite(v.c)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="lab" style="font-size:12.5px">Stored as <span class="mono">project.info.visit_schedule</span> (proposed schema). Flywheel has no first-class schedule object today; this is a platform ask.</p>`;
+};
+V.templates = ()=> header('Blueprint','Session templates','What a valid upload contains. Sites get immediate feedback in the Data Portal; QC flags sessions that do not match.',stateBadge())+
+  TEMPLATES.map(t=>`<div class="section card"><div class="card-h"><div><h3>${esc(t.label)}</h3><div class="lab" style="font-size:12.5px">Used at: ${VISITS.filter(v=>['req','cond'].includes(cellState(t.id,v.id))).map(v=>v.id).join(', ')||'unscheduled only'}</div></div><div>${cite(t.c)}</div></div>
+   <div class="card-b scroll"><table><thead><tr><th>Acquisition</th><th>Match rules</th><th>Min</th></tr></thead><tbody>
+   ${t.acq.map(a=>`<tr><td><b>${esc(a.name)}</b></td><td>${a.rules.map(r=>r.includes('D2')?`<span class="pill ${choice('D2')?'blue':'amber'}" style="margin:2px">${esc(sliceRule())}</span>`:`<span class="pill" style="margin:2px">${esc(r)}</span>`).join('')}</td><td class="mono">${a.min}</td></tr>`).join('')}</tbody></table>
+   ${t.alt?`<p class="lab" style="font-size:12.5px;margin:10px 0 0">Alternate: ${esc(t.alt)}</p>`:''}
+   ${t.id==='MRBRAIN'?`<div class="banner ${choice('D4')?'green':'amber'}">${ico('flag',16)}<div class="grow">${choice('D4')==='flag'?'Post-baseline MRI is optional in the template. Compliance uses <span class="mono">subject.info.trial.brain_mets_bl</span> from the eCRF.':choice('D4')?'Decided: '+esc(DECISIONS[3].opts.find(o=>o.id===choice('D4')).t):'<b>D4 open.</b> Templates cannot say "required only if brain mets at baseline" (verify).'} ${cite(['C5','C17'])}</div>${choice('D4')?'':'<button class="btn sm" data-go="decisions" data-focus="D4">Decide</button>'}</div>`:''}</div></div>`).join('')+
+  `<p class="lab" style="font-size:12.5px">Rules use Flywheel classification (Modality, Intent, Measurement, Features) and header values. Template API shape is unconfirmed (verify).</p>`;
+V.reads = ()=>{
+  const p=buildProtocol(), f=p.form; const d=S.formVals;
+  const fieldHtml = f.fields.map(x=>{
+    const vis=isVis(x,d); const req=vis&&isReq(x,d); let err='';
+    if(S.formChecked&&vis){ const val=d[x.key]; const empty=val==null||val===''||(Array.isArray(val)&&!val.length);
+      if(req&&empty) err='This is a required question.'; else if(!empty&&x.validation){const bad=x.validation.find(r=>!jl(r.logic,d)); if(bad) err=bad.message;} }
+    const wrap=c=>`<div class="ff ${vis?'':'hid'}">${c}${err?`<div class="err">${esc(err)}</div>`:''}</div>`;
+    if(x.type==='paragraph') return `<div class="para ${vis?'':'hid'}">${esc(x.label)}</div>`;
+    if(x.type==='instruction') return `<div class="instr ${vis?'':'hid'}"><b>${esc(x.label)}.</b> ${esc(x.description)}</div>`;
+    const lab=`<label class="fl ${req?'req':''}" for="f_${x.key}">${esc(x.label)}</label>`;
+    if(x.type==='radio') return wrap(`<div class="fl ${req?'req':''}" style="font-weight:600;font-size:13px;margin-bottom:5px">${esc(x.label)}</div><div class="ro" role="radiogroup" aria-label="${esc(x.label)}">${x.options.map(o=>`<label><input type="radio" name="f_${x.key}" data-fk="${x.key}" value="${o.value}" ${d[x.key]===o.value?'checked':''}>${esc(o.label||o.value)}</label>`).join('')}</div>`);
+    if(x.type==='int'||x.type==='float') return wrap(lab+`<input type="number" id="f_${x.key}" data-fk="${x.key}" data-num="1" step="${x.type==='int'?1:0.1}" value="${d[x.key]??''}">`);
+    if(x.type==='text-area') return wrap(lab+`<textarea id="f_${x.key}" data-fk="${x.key}" rows="3" placeholder="${esc(x.placeholder||'')}">${esc(d[x.key]||'')}</textarea>`);
+    return wrap(lab+`<input type="text" id="f_${x.key}" data-fk="${x.key}" value="${esc(d[x.key]||'')}">`);
+  }).join('');
+  const changed = choice('D3')==='fix5';
+  return header('Blueprint','Read protocol','One V3 reader-task protocol for every BICR timepoint. The preview renders the generated JSON with its real visibility and validation rules.',stateBadge())+
+  `<div class="section grid4">
+    <div class="kpi"><div class="l">Workflow</div><div class="v" style="font-size:19px;margin-top:6px">${p.workflow.type==='adjudication'?'2 reads + adjudication':'Single read'}</div><div class="s">${p.workflow.trigger_fields?'Trigger: '+p.workflow.trigger_fields[0].key:'Adjudication assigned by admin'} ${choice('D5')?'':'<span class="pill amber">D5</span>'}</div></div>
+    <div class="kpi"><div class="l">E-signature</div><div class="v" style="font-size:19px;margin-top:6px">Required</div><div class="s">MFA + reason ${cite(['C14'])}</div></div>
+    <div class="kpi"><div class="l">Prior timepoints</div><div class="v" style="font-size:19px;margin-top:6px">File browser</div><div class="s">scope: subject ${cite(['C12'])}</div></div>
+    <div class="kpi"><div class="l">Form</div><div class="v" style="font-size:19px;margin-top:6px">${f.fields.length} fields</div><div class="s">${changed?'<span class="pill green">Patched from source</span>':choice('D3')?'As supplied':'<span class="pill amber">D3 open</span>'}</div></div></div>
+  <div class="section"><div class="tabs" role="tablist">${[['preview','Reader preview'],['json','Editor JSON'],['notes','Fit and gaps']].map(([id,l])=>`<button role="tab" aria-selected="${S.readTab===id}" data-rtab="${id}">${l}</button>`).join('')}</div>
+  ${S.readTab==='preview'?`<div class="fp"><div class="fpane" id="fpane"><div style="font:400 19px var(--f-title);margin-bottom:2px">${esc(f.title)}</div><div style="color:#A3ACBA;font-size:12.5px;margin-bottom:14px">${esc(f.description)}</div>${fieldHtml}<div style="display:flex;gap:8px"><button class="btn primary sm" data-act="checkform">Check like Submit</button><button class="btn sm" data-act="resetform" style="background:#0E1A2B;color:#E7EAF0;border-color:#27395A">Reset</button></div></div>
+    <div class="card"><div class="card-h"><h3>Try it</h3></div><div class="card-b lab" style="font-size:13px;display:flex;flex-direction:column;gap:10px">
+      <div>Pick <b style="color:var(--text)">Follow-up</b>: response fields appear (JSON Logic <span class="mono">visible</span>).</div>
+      <div>Enter <b style="color:var(--text)">${tlMax()+1}</b> target lesions and press Check: the count rule fires ${cite(choice('D3')==='fix5'?['C6']:['C7'])}.</div>
+      <div>Set New lesions = Yes with overall response SD: the cross-field rule fires.</div>
+      <div>Viewer labels: Target, Non-target, New lesion; labelOnMeasure on; tag browser hidden for blinding ${cite(['C11'])}.</div></div></div></div>`:''}
+  ${S.readTab==='json'?`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn sm" data-copy="protocol">Copy JSON</button></div><pre class="json">${esc(JSON.stringify(p,null,2))}</pre>`:''}
+  ${S.readTab==='notes'?`<div class="card scroll"><table><thead><tr><th>Charter or manual says</th><th>Flywheel today</th><th>Setup does</th></tr></thead><tbody>
+    <tr><td>Readers see all prior timepoints ${cite(['C12'])}</td><td>Reader tasks are session-scoped; no subject-level task</td><td>fileBrowser scope = subject. Longitudinal reads are 2027 roadmap.</td></tr>
+    <tr><td>Adjudicate on BOR or PD timepoint disagreement ${cite(['C8'])}</td><td>Per-task trigger fields only</td><td>${choice('D5')?esc(DECISIONS[4].opts.find(o=>o.id===choice('D5')).t):'<span class="pill amber">D5 open</span>'}</td></tr>
+    <tr><td>Blinded to scan dates ${cite(['C11','C18'])}</td><td>Viewer shows DICOM dates</td><td>De-id profile shifts dates before BICR copy</td></tr>
+    <tr><td>Max 2 target lesions per organ ${cite(['C6'])}</td><td>JSON Logic can't count by organ</td><td>${choice('D3')==='fix5'?'Instruction field + total ≤5':'<span class="pill amber">D3</span>'}</td></tr>
+    <tr><td>E-signed assessments ${cite(['C14'])}</td><td>esignature_config with MFA</td><td>Required, one reason</td></tr></tbody></table></div>`:''}</div>`;
+};
+V.forms = ()=> header('Blueprint','eCRF forms','Imaging CRF built from the REDCap data dictionary. Each instrument maps to a hierarchy level so imports land on the right container.',stateBadge())+
+  `<div class="section grid2"><div class="card"><div class="card-h"><h3>imaging_visit</h3><span class="pill blue">Session level</span></div><div class="card-b lab" style="font-size:13px">One per visit session. Matched by <span class="mono">redcap_event_name</span> → visit ID. Intake project only.</div></div>
+  <div class="card"><div class="card-h"><h3>baseline_imaging</h3><span class="pill purple">Subject level</span></div><div class="card-b lab" style="font-size:13px">Once per participant. <span class="mono">brain_mets_bl</span> drives the MRI rule (D4) ${cite(['C17'])}.</div></div></div>
+  <div class="section card scroll"><table><thead><tr><th>REDCap variable</th><th>Instrument</th><th>REDCap type</th><th>Flywheel type</th><th>Level</th><th>Notes</th></tr></thead><tbody>
+  ${CRF.map(r=>`<tr><td class="mono" style="color:var(--text)">${r.v}</td><td class="mono lab">${r.inst}</td><td class="mono lab">${r.type}</td><td><span class="pill">${r.fw}</span></td><td>${r.lvl}</td><td class="lab">${r.phi?'<span class="pill red">PHI</span> ':''}${esc(r.note||'')} ${r.c?cite([r.c]):''}</td></tr>`).join('')}</tbody></table></div>
+  <p class="lab" style="font-size:12.5px">Stored in <span class="mono">project.info.forms</span> until form definitions are a first-class, versioned object (platform ask, shared with Subject View).</p>`;
+V.pipeline = ()=> header('Blueprint','Pipeline','Gear rules that run on upload. Two rely on gears that are not in the Exchange today.',stateBadge())+
+  `<div class="section card scroll"><table><thead><tr><th>Project</th><th>Gear</th><th>When</th><th>Does</th><th>Source</th></tr></thead><tbody>
+  ${GEARS.map(g=>`<tr><td><span class="pill ${g.proj==='BICR'?'purple':''}">${g.proj}</span></td><td><span class="mono" style="color:var(--text)">${g.gear}</span> <span class="mono lab">${g.ver}</span>${g.byo?' <span class="pill amber">BYO (verify)</span>':''}</td><td>${esc(g.when.replace('arm ≠ SR',choice('D6')==='in'?'all arms':'arm ≠ SR'))}</td><td class="lab">${esc(g.what)}</td><td>${cite(g.c)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="banner amber">${ico('flag',16)}<div class="grow"><b>reader-task-creator</b> stands in for automatic task creation on session arrival. Flywheel has no gear-rule trigger for reader tasks today (verify); the alternative is batch creation by the task admin.</div></div>`;
+V.team = ()=> header('Blueprint','Roles &amp; pools','Personas are defined by permission. People are added after the spec is signed; the agent never invites users.',stateBadge())+
+  `<div class="section card scroll"><table><thead><tr><th>Type</th><th>Name</th><th>Scope</th><th>Grants</th><th>Source</th></tr></thead><tbody>
+  ${TEAM.map(t=>`<tr><td><span class="pill">${t.kind}</span></td><td><b>${t.name}</b></td><td>${t.scope}</td><td class="lab">${esc(t.perm)}</td><td>${cite(t.c)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="banner purple">${ico('shield',16)}<div class="grow">Readers hold roles on the BICR project only. Independence (a reader never holds both reads of one case) is enforced client-side by the Task Admin Console today; server-side enforcement is an open platform ask.</div></div>`;
+V.decisions = ()=> header('Build','Decisions','Each decision is recorded with who chose, when and why, and becomes part of the signed setup spec.',stateBadge())+
+  `<div class="section">${DECISIONS.map(d=>{const c=S.dec[d.id];const o=d.opts.find(x=>x.id===c);
+   return `<div class="dec ${c?'done':'open'}" id="dec-${d.id}"><div class="dec-h"><div style="min-width:0;flex:1"><div class="eyebrow">${d.id} · ${d.area}</div><h3 style="margin-top:4px">${esc(d.title)}</h3><p class="lab" style="margin:6px 0 0;font-size:13px">${esc(d.why)}</p></div>
+   ${c?`<div style="text-align:right"><span class="pill green">${ico('check',11)} Decided</span><div class="lab" style="font-size:12px;margin-top:4px">${esc(S.decBy?.[d.id]||'')}</div><button class="btn ghost sm" data-undo="${d.id}" ${S.signed?'disabled':''}>Change</button></div>`:'<span class="pill amber">Open</span>'}</div>
+   <div class="dec-b"><div style="display:flex;flex-direction:column;gap:8px">${d.c.map(id=>`<div class="src"><div class="d">${esc(CITES[id].doc)} · ${esc(CITES[id].loc)}</div><q>${esc(CITES[id].q)}</q></div>`).join('')}<div class="impact">Changes: ${esc(d.impact)}</div></div>
+   <div class="opts">${c?`<div class="opt" style="cursor:default"><div><div class="t">${esc(o.t)}</div><div class="x">${esc(o.x)}</div></div></div>`:
+     d.opts.map(x=>`<label class="opt"><input type="radio" name="r-${d.id}" value="${x.id}" ${x.rec?'checked':''}><div><div class="t">${esc(x.t)}${x.rec?'<span class="rec">Agent recommends</span>':''}</div><div class="x">${esc(x.x)}</div></div></label>`).join('')+`<div style="display:flex;gap:8px"><button class="btn primary sm" data-decide="${d.id}">Record decision</button><button class="btn sm" data-ask="${d.id}">Ask agent why</button></div>`}</div></div></div>`}).join('')}</div>`;
+V.plan = ()=>{
+  const plan=buildPlan(); const o=openDecs().length; const r=S.run;
+  const groups=[...new Set(plan.map(p=>p.g))];
+  const step = S.promote.state==='done'?5:S.signed?4:S.verified?3:r.state==='done'?2:1;
+  const stp=(n,l)=>`<div class="stp ${step>n?'done':step===n?'now':''}"><b>${step>n?'✓':n}</b>${l}</div>`;
+  let banner='';
+  if(o) banner=`<div class="banner amber">${ico('flag',16)}<div class="grow"><b>${o} decision${o>1?'s':''} open.</b> The dry run is blocked until every conflict has a recorded decision.</div><button class="btn sm" data-go="decisions">Review</button></div>`;
+  else if(S.env==='val' && !S.signed) banner=`<div class="banner purple">${ico('shield',16)}<div class="grow">Validated accepts only a signed spec that passed a dry run in R&amp;D. Switch to R&amp;D to dry-run.</div></div>`;
+  else if(S.promote.state==='preflight') banner=`<div class="banner amber">${ico('flag',16)}<div class="grow"><b>Preflight on Validated found 1 gap.</b> imaging-qc-check 0.3.1 is installed on R&amp;D but not on Validated. Gear installs on a validated instance go through change control.</div><button class="btn sm" data-act="installgear">Mark installed (demo)</button></div>`;
+  else if(S.promote.state==='done') banner=`<div class="banner green">${ico('shield',16)}<div class="grow"><b>Live on Validated.</b> ${plan.length} operations applied from spec v1.0 (fingerprint ${S.signed.fp}). Read-back matches the spec. Configuration changes now require an amendment.</div></div>`;
+  else if(S.signed) banner=`<div class="banner green">${ico('lock',16)}<div class="grow"><b>Setup locked.</b> Spec v1.0 signed by Dan Rafter · ${esc(S.signed.reason)} · ${S.signed.at}. Fingerprint ${S.signed.fp}.</div></div>`;
+  else if(S.verified) banner=`<div class="banner blue">${ico('check',16)}<div class="grow"><b>Read-back matched.</b> Every asset in R&amp;D equals the spec. Sign to lock the setup.</div></div>`;
+  let primary='';
+  if(S.env==='rd'){ if(r.state!=='done') primary=`<button class="btn primary" data-act="dryrun" ${o||r.state==='running'?'disabled':''}>${r.state==='running'?'Running…':'Dry run in R&amp;D'}</button>`;
+    else if(!S.verified) primary=`<button class="btn primary" data-act="verify">Verify read-back</button>`;
+    else if(!S.signed) primary=`<button class="btn primary" data-act="sign">${ico('lock',14)} Sign &amp; lock setup</button>`;
+    else if(S.promote.state!=='done') primary=`<button class="btn primary" data-act="toval">${ico('shield',14)} Promote to Validated</button>`; }
+  else { if(S.signed && S.promote.state==='idle') primary=`<button class="btn primary" data-act="preflight">${ico('shield',14)} Run preflight</button>`;
+    if(S.promote.state==='ready') primary=`<button class="btn primary" data-act="apply">Apply spec v1.0</button>`; }
+  return header('Build','Build plan',`Every API call the setup makes, in order. ${S.env==='rd'?'R&amp;D is a sandbox: run, inspect, tear down, repeat.':'Validated: applied once from the signed spec.'}`,`${stateBadge()}<button class="btn" data-act="spec">Setup spec</button>${primary}`)+
+  `${S.live?`<div class="banner blue">${ico('shield',16)}<div class="grow"><b>Connected read-only to ${esc(S.live.site)}.</b> Dry run, sign and apply are simulated in this harness. Nothing is written to this site.</div></div>`:''}<div class="stepper">${stp(1,'Decide')}${stp(2,'Dry run in R&amp;D')}${stp(3,'Verify')}${stp(4,'Sign &amp; lock')}${stp(5,'Promote to Validated')}</div>${banner}
+  <div class="card">${groups.map(g=>`<div class="op-g">${g}</div>`+plan.filter(p=>p.g===g).map(p=>{const st=r.done[p.id];
+    return `<div class="op"><span class="mono lab">${p.id}</span><span class="m ${p.m}">${p.m}</span><span class="t2">${esc(p.t)}${p.verify?' <span class="lab" style="font-size:11.5px">(verify endpoint)</span>':''}</span><span class="e">${esc(p.e)}</span><span class="st">${st==='ok'?`<span class="pill green">${ico('check',10)} ${S.env==='val'&&S.promote.state==='done'?'applied':'201'}</span>`:st==='run'?'<span class="pill blue">…</span>':`<button class="btn ghost sm" data-preview="${p.id}">Preview</button>`}</span></div>`}).join('')).join('')}</div>`;
+};
+
+/* ============ RENDER ============ */
+function render(){
+  const app=$('#app'); app.dataset.env=S.env;
+  document.querySelectorAll('.env button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.env===S.env));
+  renderNav(); if(S.ext||S.liveErr) $('#nav').insertAdjacentHTML('beforeend',`<h6>Harness</h6><a href="#diag" ${S.view==='diag'?'aria-current="page"':''} title="Diagnostics">${ico('gear')}<span>Diagnostics</span><span class="n">${S.calls.length}</span></a>`); $('#view').innerHTML=(V[S.view]||V.overview)();
+  bindDrop(); bindBigDrop();
+}
+function go(v,focus){ S.view=V[v]?v:'overview'; const was=S.mode; S.mode=S.view==='start'?'blank':'trial'; if(was!==S.mode){ S.mode==='blank'?agentBlank():agentInit(); } if(location.hash.slice(1)!==S.view) history.replaceState(null,'','#'+S.view); render(); $('#main').scrollTop=0;
+  if(focus){const el=document.getElementById('dec-'+focus); if(el){el.scrollIntoView({block:'start'});}} }
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1); if(h&&h!==S.view) go(h)});
+
+/* ============ ACTIONS ============ */
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600);}
+function now(){const d=new Date();return d.toISOString().slice(0,16).replace('T',' ')+' UTC';}
+function modal(html){ $('#modalRoot').innerHTML=`<div class="modal" role="dialog" aria-modal="true"><div class="box">${html}</div></div>`; const f=$('#modalRoot').querySelector('input,select,button'); f&&f.focus(); }
+function closeModal(){ $('#modalRoot').innerHTML=''; }
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,a,[data-go]'); if(!t) return;
+  if(t.dataset.go){e.preventDefault(); if(window.innerWidth<=1180) $('#app').classList.remove('agent-open'); go(t.dataset.go,t.dataset.focus); return;}
+  if(t.dataset.arm){S.arm=t.dataset.arm;render();return;}
+  if(t.dataset.cell){ if(S.signed){toast('Setup is locked. Changes need an amendment.');return;}
+    const [tp,v]=t.dataset.cell.split('|'); const cur=cellState(tp,v); const order=['req','cond','opt','na']; const next=order[(order.indexOf(cur)+1)%4];
+    const saved=S.edits[t.dataset.cell]; delete S.edits[t.dataset.cell]; const derived=cellState(tp,v); if(next!==derived) S.edits[t.dataset.cell]=next; void saved;
+    resetRun(); render(); agentSay(`<p>Recorded: <b>${TEMPLATES.find(x=>x.id===tp).label}</b> at <b>${v}</b> is now <b>${next}</b>. This differs from the SoA, so it is listed as a manual edit in the spec and the trace drops below 100%.</p>`); return;}
+  if(t.dataset.decide){ const d=t.dataset.decide; const r=document.querySelector(`input[name="r-${d}"]:checked`); if(!r) return;
+    S.dec[d]=r.value; S.decBy=S.decBy||{}; S.decBy[d]='Dan Rafter · '+now(); resetRun(); render(); go('decisions',d); toast(`${d} recorded`);
+    const left=openDecs().length; if(!left) agentSay('<p>All six decisions are recorded. The build plan is ready for a dry run in R&amp;D.</p>',[['Open build plan','plan']]); return;}
+  if(t.dataset.undo){ delete S.dec[t.dataset.undo]; resetRun(); render(); go('decisions',t.dataset.undo); return;}
+  if(t.dataset.ask){ ask('why '+t.dataset.ask); return;}
+  if(t.dataset.rtab){S.readTab=t.dataset.rtab;render();return;}
+  if(t.dataset.copy){ const s=JSON.stringify(buildProtocol(),null,2); navigator.clipboard?.writeText(s).then(()=>toast('Copied protocol JSON'),()=>toast('Copy blocked here. Select the JSON and copy.')); return;}
+  if(t.dataset.preview){ const p=buildPlan().find(x=>x.id===t.dataset.preview); modal(`<div class="eyebrow">${p.id} · ${p.g}</div><h2 style="margin:6px 0 4px">${esc(p.t)}</h2><p class="mono lab" style="margin:0 0 10px">${p.m} ${esc(p.e)}</p><pre class="json" style="max-height:50vh">${esc(JSON.stringify(p.body,null,2))}</pre><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-act="close">Close</button></div>`); return;}
+  if(t.dataset.prop){ applyProposal(t.dataset.prop); return; }
+  const a=t.dataset.act; if(!a) return;
+  if(a==='close'){closeModal();return;}
+  if(a==='agent'){ $('#app').classList.add('agent-open'); return;}
+  if(a==='checkform'){S.formChecked=true;render();return;}
+  if(a==='resetform'){S.formVals={};S.formChecked=false;render();return;}
+  if(a==='dryrun') return dryRun();
+  if(a==='verify'){ S.verified=true; render(); agentSay(`<p>Read back all ${buildPlan().length} assets from R&amp;D and compared them field by field with the spec. <b>0 differences.</b></p><p>Two endpoints are marked (verify) because their shapes are inferred; the dry run proves them only against this sandbox build.</p>`); return;}
+  if(a==='sign') return modal(`<div class="eyebrow">21 CFR Part 11 · electronic signature</div><h2 style="margin:6px 0 4px">Sign setup spec v1.0</h2><p class="lab" style="margin:0">Locks the configuration. Later changes need an amendment with a reason, a new dry run and a new signature.</p>
+    <dl class="kv" style="margin-top:12px"><dt>Fingerprint</dt><dd class="mono">${fingerprint()}</dd><dt>Operations</dt><dd>${buildPlan().length}</dd><dt>Decisions</dt><dd>${DECISIONS.length} recorded</dd><dt>Manual edits</dt><dd>${Object.keys(S.edits).length}</dd></dl>
+    <label for="sreason">Reason for signature</label><select id="sreason"><option>Approved for study start</option><option>Approved for UAT</option></select>
+    <label for="smfa">MFA passcode</label><input id="smfa" inputmode="numeric" placeholder="6-digit code (any value in this demo)">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn" data-act="close">Cancel</button><button class="btn primary" data-act="dosign">Sign</button></div>`);
+  if(a==='dosign'){ S.signed={reason:$('#sreason').value,at:now(),fp:fingerprint()}; closeModal(); render(); toast('Spec v1.0 signed and locked'); agentSay('<p>Spec v1.0 is locked. Next: promote it to Validated. I will run a preflight there first (installed gears, group, roles) before anything is written.</p>',[['Switch to Validated','__val']]); return;}
+  if(a==='toval'){ setEnv('val'); return;}
+  if(a==='preflight'){ S.promote.state='preflight'; render(); return;}
+  if(a==='installgear'){ S.promote.state='ready'; render(); toast('Preflight clean'); return;}
+  if(a==='apply'){ applyVal(); return;}
+  if(a==='spec') return showSpec();
+  if(a==='sample'){ SLOTS.forEach(x=>S.slots[x.id]=x.sample); render(); agentSay('<p>Loaded the NVX-301 sample set: charter, SoA excerpt, read manual, a V3 form and a REDCap dictionary. Press <b>Draft setup</b> when ready.</p>'); return;}
+  if(a==='clearslots'){ S.slots={}; render(); return;}
+  if(a==='draft'){ startDraft(); return;}
+  if(a==='tpl'){ agentSay(`<p><b>${esc(t.dataset.tpl)}</b> template: in the product this preloads the read protocol, viewer labels and adjudication rules. You would still add the schedule, templates and forms. Not wired in this prototype; try <b>Use sample documents</b>.</p>`); if(window.innerWidth<=1180) $('#app').classList.add('agent-open'); return;}
+  if(a==='blankcfg'){ agentSay('<p>Blank setup is not wired in this prototype. In the product you would answer a few questions (criteria, arms, visit cadence, reader model) and I would draft from your answers instead of documents.</p>'); if(window.innerWidth<=1180) $('#app').classList.add('agent-open'); return;}
+});
+document.addEventListener('input',e=>{const k=e.target.dataset?.fk; if(!k) return; S.formVals[k]=e.target.dataset.num?(e.target.value===''?null:Number(e.target.value)):e.target.value;
+  if(e.target.type==='radio'){render();} else { // live visibility without losing focus
+    const id=e.target.id; const pos=e.target.selectionStart; render(); const el=document.getElementById(id); if(el){el.focus(); try{el.setSelectionRange(pos,pos)}catch(_){}} }});
+function resetRun(){S.run={state:'idle',done:{},ids:{}};S.verified=false;}
+function setEnv(env){ S.env=env; if(env==='val'){ if(S.promote.state!=='done') S.run={state:'idle',done:{},ids:{}}; } else if(S.promote.state!=='done' && S.signed){ const ops=buildPlan(); S.run={state:'done',done:Object.fromEntries(ops.map(o=>[o.id,'ok'])),ids:{}}; }
+  render(); toast(env==='val'?'Validated instance':'R&D sandbox'); }
+document.querySelectorAll('.env button').forEach(b=>b.addEventListener('click',()=>setEnv(b.dataset.env)));
+function dryRun(){ const ops=buildPlan(); S.run={state:'running',done:{},ids:{}}; go('plan'); let i=0;
+  const tick=()=>{ if(i>0) S.run.done[ops[i-1].id]='ok'; if(i<ops.length){S.run.done[ops[i].id]='run'; i++; render(); setTimeout(tick,70);} else {S.run.state='done'; render(); agentSay(`<p>Dry run complete in R&amp;D: <b>${ops.length} of ${ops.length}</b> operations returned success. Two projects, ${TEMPLATES.length} templates, ${GEARS.length} gear rules, 1 protocol.</p><p>Next, I read everything back and compare it with the spec.</p>`);} };
+  tick(); }
+function applyVal(){ const ops=buildPlan(); S.promote.state='running'; S.run={state:'running',done:{},ids:{}}; let i=0;
+  const tick=()=>{ if(i>0) S.run.done[ops[i-1].id]='ok'; if(i<ops.length){S.run.done[ops[i].id]='run'; i++; render(); setTimeout(tick,55);} else {S.run.state='done'; S.promote.state='done'; render(); toast('Live on Validated'); agentSay('<p>Applied spec v1.0 to Validated and read it back: no drift. The build record (spec, decisions, dry-run and apply logs) is ready for the validation file.</p>');} };
+  tick(); }
+function showSpec(){ const spec={spec_version:'1.0',status:S.signed?'signed':'draft',fingerprint:fingerprint(),signed:S.signed||null,sources:SOURCES.map(s=>s.name),decisions:DECISIONS.map(d=>({id:d.id,choice:S.dec[d.id]||null,by:S.decBy?.[d.id]||null})),manual_edits:S.edits,operations:buildPlan().map(o=>({id:o.id,method:o.m,endpoint:o.e,summary:o.t}))};
+  modal(`<div class="eyebrow">Setup spec · ${S.signed?'signed':'draft'}</div><h2 style="margin:6px 0 10px">NVX-301 setup spec v1.0</h2><pre class="json" style="max-height:56vh">${esc(JSON.stringify(spec,null,2))}</pre><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-act="close">Close</button></div>`); }
+
+function startDraft(){ S.drafting=0; render(); const tick=()=>{ S.drafting++; if(S.drafting<=RUN.length){ render(); setTimeout(tick,420);} else { S.drafting=-1; go('overview'); toast('Draft ready'); } }; setTimeout(tick,420); }
+function bindBigDrop(){ const d=$('#bigdrop'); if(!d) return; const add=files=>{ const left=[]; [...files].forEach(f=>{ const sl=SLOTS.find(x=>!S.slots[x.id]&&x.re.test(f.name)); if(sl) S.slots[sl.id]=f.name; else left.push(f.name); }); render();
+    agentSay(`<p>Matched ${files.length-left.length} of ${files.length} file${files.length>1?'s':''} to slots by name.${left.length?` I couldn't place: <span class="mono">${left.map(esc).join(', ')}</span>. Rename them or tell me what they are.`:''}</p><p class="lab" style="font-size:12.5px">This prototype matches by filename only; drafting always uses the NVX-301 sample.</p>`); };
+  d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over')}); d.addEventListener('dragleave',()=>d.classList.remove('over'));
+  d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('over');add(e.dataTransfer.files)}); $('#bigfile').addEventListener('change',e=>add(e.target.files)); }
+function agentBlank(){
+  $('#agBody').innerHTML=`<div class="msg ai"><p><b>Hi Dan.</b> I set up trials in Flywheel from your study documents.</p>
+   <p>Add the <b>imaging charter</b> and the <b>protocol or schedule of assessments</b>, plus the read manual and any form definitions you have. I'll draft the arms, visits, session templates, read protocol, forms and gear rules, and point out where the documents disagree.</p>
+   <p class="lab" style="font-size:12.5px">I only propose. You review everything, and nothing is written to Flywheel until you run the build plan.</p></div>`;
+  setSugs(['What documents do you need?','Can I start without a charter?','What gets created in Flywheel?']);
+}
+/* tooltips for citations */
+const tip=$('#tip');
+document.addEventListener('mouseover',e=>{const c=e.target.closest('[data-cite]'); if(!c){tip.hidden=true;return;} const d=CITES[c.dataset.cite]; tip.innerHTML=`<div class="d">${esc(d.doc)} · ${esc(d.loc)}</div><q>${esc(d.q)}</q>`; tip.hidden=false; const r=c.getBoundingClientRect(); tip.style.left=Math.min(r.left,window.innerWidth-360)+'px'; tip.style.top=(r.bottom+6)+'px';});
+document.addEventListener('focusin',e=>{const c=e.target.closest('[data-cite]'); if(c) c.dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();tip.hidden=true;$('#app').classList.remove('agent-open');}});
+
+/* upload (demo) */
+function bindDrop(){ const d=$('#drop'); if(!d) return; const add=files=>{[...files].forEach(f=>SOURCES.push({id:'U'+SOURCES.length,name:f.name,kind:'Uploaded (demo)',size:Math.round(f.size/1024)+' KB',got:'Not parsed in this prototype. In the product the agent extracts and diffs it against the current spec.',n:'—',uploaded:true})); render(); agentSay(`<p>Received ${files.length} file${files.length>1?'s':''}. In the product I would extract it, diff it against spec v1.0 and open an amendment if anything changes. This prototype does not parse uploads.</p>`);};
+  d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over')}); d.addEventListener('dragleave',()=>d.classList.remove('over'));
+  d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('over');add(e.dataTransfer.files)}); $('#file').addEventListener('change',e=>add(e.target.files)); }
+
+/* ============ AGENT (scripted; not an LLM) ============ */
+const RUN = [['Read Imaging Charter v2.0 (48 pp)','31 items','0:42'],['Read Protocol Amd 2 SoA excerpt','14 items','0:18'],['Read IRC Read Manual v1.1','12 items','0:27'],['Parsed V3 form JSON (22 fields)','valid schema','0:01'],['Parsed REDCap data dictionary','2 instruments','0:01'],['Cross-checked sources','6 conflicts or gaps','0:09'],['Checked Flywheel R&D site capabilities','gears, roles, group','0:04'],['Drafted build plan','ops ready','0:03']];
+function agentInit(){
+  $('#agBody').innerHTML = `<details class="run" open><summary><span>${ico('check',13)} Read 5 sources, drafted setup</span><span class="mono lab">1:45</span></summary><ol>${RUN.map(r=>`<li>${ico('check',12)}<span>${r[0]} <span class="lab">· ${r[1]}</span></span><span class="tm">${r[2]}</span></li>`).join('')}</ol></details>
+  <div class="msg ai"><p>I built a draft setup for <b>NVX-301</b>: two projects (Intake and blinded BICR), ${VISITS.length} visits across 3 arms, ${TEMPLATES.length} session templates, a RECIST 1.1 read protocol with adjudication, ${GEARS.length} gear rules, and roles and pools.</p>
+  <p><b>6 things need your call.</b> The biggest: the protocol and the charter disagree on the visit window (±7 vs ±3 days), and the supplied form caps target lesions at 3 when RECIST allows 5.</p>
+  <p class="lab" style="font-size:12.5px">Every value links to the sentence it came from. Hover a blue chip to see it.</p></div>`;
+  setSugs(['What is still blocking the build?','Why ±7 days?','Add a bone scan at end of treatment','How do readers stay blinded?']);
+}
+function setSugs(list){ $('#sugs').innerHTML=list.map(s=>`<button class="sug" type="button">${esc(s)}</button>`).join(''); $('#sugs').querySelectorAll('.sug').forEach(b=>b.onclick=()=>ask(b.textContent)); }
+function agentSay(html,links){ const m=document.createElement('div'); m.className='msg ai'; m.innerHTML=html+(links?`<div class="chips">${links.map(([l,v])=>`<button class="chip" ${v==='__val'?'data-act="toval"':`data-go="${v}"`}>${l}</button>`).join('')}</div>`:''); $('#agBody').appendChild(m); $('#agBody').scrollTop=1e9; }
+function ask(q){
+  const me=document.createElement('div'); me.className='msg me'; me.textContent=q; $('#agBody').appendChild(me);
+  if(window.innerWidth<=1180) $('#app').classList.add('agent-open');
+  const s=q.toLowerCase(); let html, links;
+  if(/documents do you need|what documents/.test(s)){ html='<p>Minimum: the <b>imaging charter</b> and the <b>protocol or SoA</b>. Better: add the <b>read manual</b> (reader model, adjudication, criteria rules) and <b>form definitions</b> (Flywheel V3 JSON, REDCap data dictionary CSV, or ODM-XML (verify)). Use locked, approved versions; each value I draft cites a page.</p>'; }
+  else if(/without a charter/.test(s)){ html='<p>Yes. Retrospective studies often have only a protocol or a statistical analysis plan. I will draft what I can and list the gaps (blinding, acquisition parameters, QC rules) as open decisions instead of guessing.</p>'; }
+  else if(/what gets created/.test(s)){ html='<p>In the R&amp;D sandbox first: projects, trial and visit schedule, session templates, a de-identification profile, gear rules, the read protocol, eCRF definitions, roles, staffing pools, tags and a data view. You see every API call before it runs.</p>'; }
+  else if(s.startsWith('why d')){ const d=DECISIONS.find(x=>x.id===q.slice(4).toUpperCase()); const r=d.opts.find(o=>o.rec);
+    html=`<p><b>${d.id}: I recommend "${esc(r.t)}".</b></p><p>${esc(r.x)}</p><p>Evidence: ${cite(d.c)}</p><p class="lab" style="font-size:12.5px">You make the call; I only record it.</p>`; }
+  else if(/block|left|remaining|status/.test(s)){ const o=openDecs();
+    html = o.length?`<p>${o.length} decision${o.length>1?'s':''} block the dry run:</p><ul>${o.map(d=>`<li><b>${d.id}</b> ${esc(d.title)}</li>`).join('')}</ul><p>Two gear rules depend on gears that are not in the Exchange (imaging-qc-check, reader-task-creator). They do not block the dry run in R&amp;D, but Validated needs them installed.</p>`:
+      S.signed?`<p>Nothing blocks. Spec v1.0 is ${S.promote.state==='done'?'live on Validated':'signed; promote it to Validated next'}.</p>`:`<p>Nothing blocks the dry run. Run it from the build plan.</p>`; links=[[o.length?'Open decisions':'Open build plan',o.length?'decisions':'plan']]; }
+  else if(/7|window/.test(s)){ html=`<p>The protocol SoA gives ±7 days ${cite(['C3'])} and the charter gives ±3 ${cite(['C2'])}. The charter itself says the protocol wins on conflicts ${cite(['C1'])}, so I recommend ±7 and a note to amend the charter.</p>`; links=[['Decide D1','decisions']]; }
+  else if(/bone|eot|end of treatment/.test(s)){ html=`<p>The charter allows a bone scan when clinically indicated ${cite(['C15'])}, which is why it is <i>optional</i> at EOT today. Making it <b>required</b> at EOT goes beyond the charter.</p><div class="prop"><div class="k">Proposed change</div><div>Bone scan at <b>EOT</b>: optional → required. Recorded as a manual edit with you as author.</div><div class="acts"><button class="btn sm primary" data-prop="bone-eot">Apply</button><button class="btn sm" data-go="schedule">See schedule</button></div></div>`; }
+  else if(/blind/.test(s)){ html=`<p>Four layers ${cite(['C11'])}:</p><ul><li>Readers have roles only on the BICR project, which never receives arm, site or scan dates.</li><li>The de-id gear shifts dates per participant ${cite(['C18'])}.</li><li>The viewer hides the tag browser; labels are fixed to TL, NTL and NL.</li><li>The Reader Portal shows only assigned tasks, without labels.</li></ul><p>Open risk: DICOM headers the profile misses. Have QA run a header scan on the first BICR copies.</p>`; }
+  else if(/slice|thick/.test(s)){ html=`<p>Charter: ≤5 mm required, ≤2.5 mm recommended ${cite(['C4'])}. A template rule only passes or fails, so I put the 5 mm limit in the template and the 2.5 mm warning in the QC gear.</p>`; links=[['Decide D2','decisions']]; }
+  else if(/adjud/.test(s)){ html=`<p>The manual triggers adjudication on best overall response or progression timepoint ${cite(['C8'])}. Those span visits, and Flywheel triggers per task, so the closest match is a per-timepoint overall_response trigger. It adjudicates more often than the manual requires.</p>`; links=[['Decide D5','decisions']]; }
+  else { html=`<p>This prototype answers a few scripted questions: what's blocking the build, the visit window, slice thickness, adjudication, blinding, or adding a bone scan at EOT. In the product this is the Loka agent working through the Application MCP, with read-only tools and propose → preview → approve for changes.</p>`; }
+  setTimeout(()=>agentSay(html,links),280);
+}
+function applyProposal(id){ if(S.signed){toast('Setup is locked. Changes need an amendment.');return;}
+  if(id==='bone-eot'){ S.edits['BONE|EOT']='req'; resetRun(); render(); toast('Bone scan required at EOT'); agentSay('<p>Applied. Bone scan at EOT is now required, marked as your edit. The dry run must be repeated.</p>',[['See schedule','schedule']]); } }
+$('#agForm').addEventListener('submit',e=>{e.preventDefault(); const v=$('#agInput').value.trim(); if(!v) return; $('#agInput').value=''; ask(v);});
+$('#agentClose').onclick=()=>{ if(window.innerWidth<=1180) $('#app').classList.remove('agent-open'); else $('#app').classList.add('agent-off'); toast('Agent hidden. Use the Agent button to reopen.'); addAgentBtn(); };
+function addAgentBtn(){}
+$('#railToggle').onclick=()=>$('#app').classList.toggle('rail-min');
+document.addEventListener('click',e=>{ if(e.target.closest('[data-act="agent"]')) $('#app').classList.remove('agent-off'); });
+
+/* boot */
+S.calls=[]; S.live=null;
+function liveChip(){ return S.live?`<span class="livechip">Live · ${esc(S.live.site)} · read-only</span>`:''; }
+function groupPicker(){ if(!S.live||!S.live.groups.length) return 'novexa-nvx301'; return `<select class="gsel" id="gsel" aria-label="Group">${S.live.groups.map(g=>`<option>${esc(g._id||g.id)}</option>`).join('')}</select>`; }
+V.diag=()=>header('Harness','Diagnostics','Every API call this harness made through the extension SDK. Harness only; not part of the product app.')+
+  `${S.liveErr?`<div class="banner amber"><div class="grow"><b>SDK not connected.</b> ${esc(S.liveErr)}</div></div>`:''}
+  <div class="section card scroll"><table><thead><tr><th>Call</th><th>Status</th><th>ms</th><th>Sample</th></tr></thead><tbody>
+  ${S.calls.map(c=>`<tr><td class="mono">${c.m} ${esc(c.path)}</td><td>${c.ok?'<span class="pill green">ok</span>':'<span class="pill red">error</span>'}</td><td class="mono">${c.ms}</td><td class="mono lab" style="max-width:520px;overflow-wrap:anywhere">${esc(c.ok?c.sample:c.err)}</td></tr>`).join('')||'<tr><td colspan="4" class="lab">No calls yet.</td></tr>'}</tbody></table></div>
+  <dl class="kv section"><dt>Build</dt><dd class="mono">trial-builder harness v1 · extension SDK 0.14.9</dd><dt>In frame</dt><dd>${window.parent!==window}</dd></dl>`;
+async function api(m,path,params){ const t0=performance.now(); try{ const r=await S.ext.apiRequest(m,path,params); S.calls.push({m,path,ok:true,ms:Math.round(performance.now()-t0),sample:JSON.stringify(Array.isArray(r)?r[0]:(r&&r.results?r.results[0]:r)).slice(0,280)}); return r; }
+  catch(e){ S.calls.push({m,path,ok:false,ms:Math.round(performance.now()-t0),err:String(e&&e.message||e)}); throw e; } }
+async function connect(){
+  if(window.parent===window) return;
+  if(!window.Flywheel){ S.liveErr='Extension SDK failed to load from cdn.flywheel.io.'; render(); return; }
+  try{
+    S.ext=await Flywheel.initExtension({scope:'ReadWrite',validateOrigin:o=>/^https:\/\/[a-z0-9.-]+\.flywheel\.io$/.test(o)});
+    const me=await api('GET','/api/users/self');
+    let groups=[]; try{ const g=await api('GET','/api/groups'); groups=Array.isArray(g)?g:(g.results||[]); }catch(_){}
+    let site='flywheel'; try{ site=new URL(document.referrer).host.split('.')[0]; }catch(_){}
+    S.live={site,user:me,groups};
+    const nm=[me.firstname,me.lastname].filter(Boolean).join(' ')||me.email||me._id;
+    $('#uName').textContent=nm; $('#uAv').textContent=nm.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    render(); toast('Connected to '+site+' as '+nm);
+  }catch(e){ S.liveErr=String(e&&e.message||e); render(); }
+}
+document.addEventListener('pointerdown',()=>{ if(S.ext&&!S.fsTried&&!document.fullscreenElement){ S.fsTried=1; document.documentElement.requestFullscreen?.().catch(()=>{}); } });
+S.view = V[location.hash.slice(1)]?location.hash.slice(1):'start'; S.mode=S.view==='start'?'blank':'trial';
+if(S.mode==='blank') agentBlank(); else agentInit(); render(); connect();
+</script>
+
+</body>
+</html>
