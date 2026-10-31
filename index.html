@@ -83,9 +83,18 @@ a{color:var(--link)}
 .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#093AF6,#B080FC);display:grid;place-items:center;font-weight:600;font-size:11px;color:#fff;flex:none}
 .app.rail-min .brand b,.app.rail-min .appname,.app.rail-min .env,.app.rail-min .nav h6,.app.rail-min .nav a span,.app.rail-min .nav a .n,.app.rail-min .user div{display:none}
 .app.rail-min .nav a{justify-content:center}
+.app.rail-min .nav-hint{display:none}
+.app.rail-min .brand{flex-direction:column;align-items:center;padding:14px 0 8px;gap:10px}
+.app.rail-min #railToggle{margin:0!important}
+.app.rail-min .nav{padding-top:6px}
+.app.rail-min .nav h6+a{margin-top:10px}
+.app.rail-min .user{justify-content:center;padding:12px 0}
+.app.rail-min .nav a .n.warn{display:none}
+.rail{position:relative}
 
 /* main */
-.main{overflow:auto;min-width:0}
+.main{overflow:auto;min-width:0;grid-column:2;grid-row:1}
+.rail{grid-column:1;grid-row:1} .agent{grid-column:3;grid-row:1}
 .wrap{padding:22px max(16px,2.2vw) 60px;max-width:1240px}
 .top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
 .eyebrow{font:400 12px var(--f-mono);color:var(--label);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -291,8 +300,7 @@ pre.json{background:var(--code);border:1px solid var(--card-border);border-radiu
 @media (max-width:760px){.slots,.steps4{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:1180px){
   .app,.app.rail-min{grid-template-columns:64px minmax(0,1fr) 0}
-  .app .brand b,.app .appname,.app .env,.app .nav h6,.app .nav a span,.app .nav a .n,.app .user div{display:none}
-  .app .nav a{justify-content:center}
+  .app:not(.rail-min) .rail{position:fixed;left:0;top:0;bottom:0;width:232px;z-index:45;box-shadow:10px 0 30px rgba(0,0,0,.28)}
   .agent{position:fixed;right:0;top:0;bottom:0;width:min(380px,100%);z-index:40;transform:translateX(100%);transition:transform .2s;box-shadow:-10px 0 30px rgba(0,0,0,.4)}
   .app.agent-open .agent{transform:none}
   .mobile-agent{display:inline-flex}
@@ -300,6 +308,7 @@ pre.json{background:var(--code);border:1px solid var(--card-border);border-radiu
 }
 @media (max-width:760px){
   .app,.app.rail-min{grid-template-columns:minmax(0,1fr)}
+  .main{grid-column:1}
   .rail{position:fixed;left:0;right:0;bottom:0;top:auto;height:56px;flex-direction:row;z-index:30;border-right:0;border-top:1px solid var(--rail-border)}
   .brand,.appname,.env,.user,.nav h6{display:none!important}
   .nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px}
@@ -357,7 +366,7 @@ h2{font-weight:600;font-size:18px;letter-spacing:-.01em}
 <div class="app" id="app" data-env="rd">
   <aside class="rail" aria-label="Trial Builder navigation">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="url(#fwg)"/><path d="M9 10.5l13-4v4.2l-13 4zM9 17l9.5-3v4.2L9 21.2z" fill="#fff"/></svg>
+      <svg class="mark" width="28" height="28" viewBox="0 0 32 32" role="img" aria-label="Flywheel"><rect width="32" height="32" rx="8" fill="url(#fwg)"/><path transform="translate(5.2 5.2) scale(.675)" fill="#fff" d="M25.272 2.538c-0.041-0.105-0.103-0.2-0.181-0.281s-0.171-0.145-0.273-0.189c-0.102-0.044-0.212-0.068-0.324-0.069s-0.222 0.020-0.325 0.062l-16.971 6.917c-0.154 0.063-0.287 0.171-0.382 0.31s-0.147 0.303-0.15 0.472v5.264c0 0.11 0.021 0.218 0.061 0.32 0.040 0.106 0.101 0.202 0.179 0.284s0.17 0.147 0.273 0.193c0.103 0.045 0.213 0.070 0.325 0.072s0.223-0.019 0.327-0.060l16.971-6.917c0.158-0.062 0.295-0.171 0.392-0.312s0.149-0.309 0.151-0.481v-5.264c-0.004-0.11-0.028-0.219-0.072-0.32zM21.795 12.102l-14.593 5.876c-0.158 0.064-0.293 0.175-0.389 0.317s-0.146 0.311-0.146 0.484v6.917c0 0.169 0.049 0.333 0.141 0.474s0.223 0.25 0.376 0.316l4.914 2.119c0.105 0.044 0.217 0.066 0.33 0.066 0.111 0.001 0.222-0.021 0.325-0.064s0.197-0.106 0.275-0.186 0.141-0.175 0.184-0.279c0.042-0.104 0.064-0.216 0.064-0.329v-4.602c0.001-0.173 0.053-0.341 0.149-0.484s0.232-0.253 0.39-0.317l8.62-3.44c0.158-0.064 0.294-0.174 0.39-0.317s0.148-0.311 0.149-0.484v-5.246c0-0.109-0.021-0.216-0.061-0.317-0.039-0.109-0.099-0.208-0.177-0.293s-0.172-0.152-0.276-0.199c-0.104-0.047-0.217-0.072-0.331-0.074s-0.227 0.020-0.333 0.064z"/></svg>
       <b>Flywheel</b>
       <button class="iconbtn" id="railToggle" style="margin-left:auto;width:26px;height:26px" aria-label="Collapse navigation"><svg width="14" height="14"><use href="#i-menu"/></svg></button>
     </div>
@@ -610,7 +619,7 @@ const NAV = [
   ['Build',[['decisions','flag','Decisions'],['plan','plan','Build plan']]],
 ];
 function renderNav(){
-  if(S.mode==='blank'){ $('#nav').innerHTML=`<h6>Trials</h6><a href="#start" aria-current="page" title="New trial">${ico('plus')}<span>New trial</span></a><h6>Blueprint</h6><p class="lab" style="font-size:12px;margin:2px 10px;line-height:1.45">Arms, visits, templates, reads, forms and pipeline appear here once the agent drafts your setup.</p>`; return; }
+  if(S.mode==='blank'){ $('#nav').innerHTML=`<h6>Trials</h6><a href="#start" aria-current="page" title="New trial">${ico('plus')}<span>New trial</span></a><h6>Blueprint</h6><p class="lab nav-hint" style="font-size:12px;margin:2px 10px;line-height:1.45">Arms, visits, templates, reads, forms and pipeline appear here once the agent drafts your setup.</p>`; return; }
   const counts={sources:SOURCES.length,study:ARMS.length,schedule:VISITS.length,templates:TEMPLATES.length,reads:1,forms:2,pipeline:GEARS.length,team:TEAM.length,plan:buildPlan().length};
   $('#nav').innerHTML = NAV.map(([h,items])=>`<h6>${h}</h6>`+items.map(([id,ic,l])=>{
     let n=counts[id]!=null?`<span class="n">${counts[id]}</span>`:'';
@@ -946,7 +955,12 @@ function applyProposal(id){ if(S.signed){toast('Setup is locked. Changes need an
 $('#agForm').addEventListener('submit',e=>{e.preventDefault(); const v=$('#agInput').value.trim(); if(!v) return; $('#agInput').value=''; ask(v);});
 $('#agentClose').onclick=()=>{ if(window.innerWidth<=1180) $('#app').classList.remove('agent-open'); else $('#app').classList.add('agent-off'); toast('Agent hidden. Use the Agent button to reopen.'); addAgentBtn(); };
 function addAgentBtn(){}
-$('#railToggle').onclick=()=>$('#app').classList.toggle('rail-min');
+const mqN=matchMedia('(max-width:1180px)');
+function syncRail(){ $('#app').classList.toggle('rail-min', mqN.matches); railLabel(); }
+function railLabel(){ const m=$('#app').classList.contains('rail-min'); $('#railToggle').setAttribute('aria-label',m?'Expand navigation':'Collapse navigation'); $('#railToggle').title=m?'Expand navigation':'Collapse navigation'; }
+mqN.addEventListener('change',syncRail); syncRail();
+$('#railToggle').onclick=()=>{ $('#app').classList.toggle('rail-min'); railLabel(); };
+document.addEventListener('click',e=>{ if(mqN.matches && !$('#app').classList.contains('rail-min') && (e.target.closest('.nav a') || !e.target.closest('.rail'))){ $('#app').classList.add('rail-min'); railLabel(); } });
 document.addEventListener('click',e=>{ if(e.target.closest('[data-act="agent"]')) $('#app').classList.remove('agent-off'); });
 
 /* boot */
